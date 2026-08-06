@@ -39,7 +39,6 @@ from src.ui import (
     provider_bubble_fig,
     q3014_hist_fig,
     render_hero,
-    render_thesis_banner,
     section_help,
     source_card,
     volume_bar_fig,
@@ -637,7 +636,6 @@ def main() -> None:
     portfolio = run_portfolio(claims)
 
     render_hero()
-    render_thesis_banner()
     if st.session_state.show_guide:
         _render_demo_guide()
     _render_first_run_coach()

@@ -182,48 +182,6 @@ def inject_styles() -> None:
             background: #2ecc87;
             margin-right: 0.4rem;
         }}
-        .pg-thesis {{
-            background: #eef0ff;
-            border: 1px solid #d4d8f5;
-            border-left: 4px solid {COLORS["accent"]};
-            border-radius: 12px;
-            padding: 0.85rem 1.1rem;
-            margin: 0 0 1rem 0;
-        }}
-        .pg-thesis .pg-thesis-label {{
-            color: {COLORS["accent"]};
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin: 0 0 0.25rem 0;
-        }}
-        .pg-thesis p {{
-            margin: 0;
-            color: {COLORS["ink"]};
-            font-size: 0.95rem;
-            line-height: 1.45;
-        }}
-        .pg-crumbs {{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            align-items: center;
-            margin-top: 0.65rem;
-        }}
-        .pg-crumb {{
-            background: white;
-            border: 1px solid #d4d8f5;
-            color: {COLORS["ink"]};
-            padding: 0.2rem 0.55rem;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 600;
-        }}
-        .pg-crumb-arrow {{
-            color: {COLORS["muted"]};
-            font-size: 0.75rem;
-        }}
         .pg-why {{
             color: {COLORS["muted"]};
             font-size: 0.85rem;
@@ -279,28 +237,6 @@ def render_hero() -> None:
             <span class="pg-constraint">No automatic claim denial</span>
             <span class="pg-constraint">Human approval required</span>
           </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_thesis_banner() -> None:
-    """Persistent main-point strip so the demo thesis cannot be missed."""
-    steps = ["Compare", "Evidence", "Rule/Abstain", "Impact", "Human decision"]
-    crumbs = []
-    for i, step in enumerate(steps):
-        crumbs.append(f'<span class="pg-crumb">{html.escape(step)}</span>')
-        if i < len(steps) - 1:
-            crumbs.append('<span class="pg-crumb-arrow">→</span>')
-    st.markdown(
-        f"""
-        <div class="pg-thesis">
-          <div class="pg-thesis-label">What this proves</div>
-          <p><strong>Policy change → source-grounded evidence → validated rule
-          (or abstain) → synthetic claim review → human approval.</strong>
-          No automatic claim action — every output is a review recommendation.</p>
-          <div class="pg-crumbs">{"".join(crumbs)}</div>
         </div>
         """,
         unsafe_allow_html=True,
