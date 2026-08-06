@@ -366,12 +366,17 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
         "This JSON is a **proposal for human review**, not executable auto-denial code. "
         "The engine interprets declarative conditions; it never executes generated Python/SQL."
     )
+    def _display_value(value: object) -> str:
+        if isinstance(value, list):
+            return ", ".join(str(v) for v in value)
+        return "" if value is None else str(value)
+
     conditions = pd.DataFrame(
         [
             {
                 "field": c.field,
                 "operator": c.operator,
-                "value": c.value,
+                "value": _display_value(c.value),
                 "tolerance": c.tolerance,
             }
             for c in rule.conditions
