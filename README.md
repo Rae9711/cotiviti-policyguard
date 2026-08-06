@@ -1,143 +1,209 @@
-# PolicyGuard
+# PolicyGuard Intelligence Studio
 
-> **Disclaimer:** PolicyGuard is a human-in-the-loop proof of concept that compares healthcare policy versions, extracts source-grounded changes, proposes validated declarative rules, and tests approved rules against synthetic claims. It does not make autonomous clinical, payment, or claim-denial decisions.
+**From policy version change to defensible operational review.**
 
-**Topic 3 — Content Management in Health Care** (Cotiviti Generative AI Research Intern assessment)
+PolicyGuard is a human-in-the-loop healthcare policy intelligence proof of concept. It curates versioned public policy evidence, detects material changes, translates clear changes into schema-validated review rules, simulates claim impact on synthetic data, and records expert decisions. It never denies, reprices, adjudicates, or makes a clinical decision.
 
-One-sentence: PolicyGuard compares two versions of a healthcare billing policy, identifies material changes with source evidence, converts an approved change into a validated declarative rule, and tests that rule against synthetic claims.
+![PolicyGuard interface preview](assets/ui_preview.png)
 
----
+> **Assessment scope:** public CMS policy sources and deterministic synthetic claims only. No PHI, proprietary claims, payer contracts, or employer data are included.
 
-## One-command startup
+## Why this version is stronger
+
+| Earlier baseline | PolicyGuard v2 |
+|---|---|
+| One hard-coded `EXAMPLE1` scenario | Five distinct CMS policy-change patterns |
+| Simple line diff | Hybrid sentence matching, word highlighting, and code/date/currency/modifier extraction |
+| One claim filter | Four validated rules executed as a portfolio |
+| Minimal output table | Executive matrix, time trend, provider concentration, fee distribution, and prioritized reviewer queue |
+| Rule output only | Evidence → change → rule → impact → approval → audit workflow |
+| Every example becomes a rule | Explicit abstention when claim fields cannot establish clinical purpose |
+| API-style demo dependency | Fully functional offline core; no API key required |
+| Static toy dataset | 604 deterministic synthetic claims with four named demonstration cases |
+
+## Live demo scenarios
+
+1. **NCCI code retirement:** code `94662` appears in CY 2025 references and is identified by CMS as deleted effective January 1, 2026. The rule routes post-effective-date occurrences to coding-configuration review.
+2. **Therapy KX threshold:** the demonstration compares the CY 2025 threshold of `$2,410` with the CY 2026 threshold of `$2,480`, then checks synthetic therapy claims above the current threshold without `KX`.
+3. **Telehealth facility fee:** the Q3014 originating-site facility fee changes from `$31.01` to `$31.85`; a tolerance-based rule surfaces possible configuration variance.
+4. **New therapy RTM codes:** codes `98979`, `98984`, and `98985` are checked for synthetic policy-mapping status.
+5. **Required abstention:** skilled therapy versus general fitness depends on clinical purpose and documentation, so PolicyGuard refuses to generate a claim-level rule.
+
+The public-source metadata, locators, concise paraphrases, and rule proposals are in [`data/policies/policy_catalog.json`](data/policies/policy_catalog.json).
+
+## Product workflow
+
+![PolicyGuard architecture](assets/architecture.svg)
+
+The architecture is intentionally controlled rather than agent-heavy:
+
+- **Evidence:** curated source manifest with version, effective date, and locator
+- **Compare:** local semantic and entity-aware change analysis
+- **Structure:** Pydantic-validated declarative rules
+- **Simulate:** deterministic execution on synthetic claims
+- **Review:** approve, reject, or escalate with rationale
+- **Audit:** downloadable JSONL decision record with `automatic_claim_action=false`
+
+## Quick start
+
+Python 3.11 or later is recommended.
 
 ```bash
+git clone https://github.com/Rae9711/cotiviti-policyguard.git
 cd cotiviti-policyguard
+
 python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+
+python src/demo_data.py
+python scripts/run_evaluation.py
+pytest -q
 streamlit run app.py
 ```
 
-**No API key is required.** The demo uses deterministic change analysis and a cached/known-path rule builder for the EXAMPLE1 effective-date revision. Ambiguous integral-language changes abstain and request expert interpretation.
+The application opens at `http://localhost:8501` by default.
 
-### Tests and evaluation
+No `.env` file, model key, database, Docker daemon, or external service is required.
 
-```bash
-pytest -q
-python -m evaluation.run_evaluation
-```
+## Best five-minute route
 
-Optional regenerators:
+The detailed script is in [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
 
-```bash
-python scripts/build_report.py    # report/*.docx + *.md (uses evaluation results)
-python scripts/build_slides.py    # slides/PolicyGuard_Presentation.pptx
-```
+1. **Executive overview:** explain the five policy patterns and opportunity matrix.
+2. **Policy intelligence:** select the therapy KX threshold and show source-grounded before/after evidence.
+3. **Rule studio:** show the validated JSON and dry-run output.
+4. **Claim impact:** show review volume, provider concentration, and reviewer queue.
+5. **Governance:** switch to the skilled-therapy example, demonstrate abstention, and record an escalation.
 
----
+## Synthetic run
 
-## How the code works
+The committed dataset contains 604 synthetic claim rows. The current deterministic portfolio produces:
 
-End-to-end pipeline:
+| Metric | Result |
+|---|---:|
+| Claims evaluated | 604 |
+| Unique claims routed to review | 55 |
+| Review events | 55 |
+| Synthetic providers in scope | 33 |
+| Synthetic paid amount associated with flagged claims | $5,627.13 |
+| Flag rate | 9.1% |
 
-1. **Diff** — `src/policy_diff.py` uses `difflib.ndiff` for additions/deletions.  
-2. **Analyze** — `src/change_analyzer.py` builds source-grounded changes and proposes Pydantic rules (or abstains).  
-3. **Constrain** — `src/schema.py` allows only `flag_for_review` / `no_action` (never denial).  
-4. **Review** — Streamlit HITL buttons: Approve / Reject / Request Expert Interpretation.  
-5. **Apply** — `src/rule_engine.py` deterministically flags synthetic claims after Approve.  
-6. **Audit** — `src/audit_log.py` appends JSONL events.
-
-**Docs for evaluators:**
-
-- [docs/CODE_WALKTHROUGH.md](docs/CODE_WALKTHROUGH.md) — full system narrative  
-- [docs/FUNCTION_REFERENCE.md](docs/FUNCTION_REFERENCE.md) — every function in plain English  
-
-Claim-impact language is careful only: *potentially affected*, *flagged for review*, *requires expert validation*, *insufficient evidence*, *no automated action taken*.
-
----
-
-## Architecture overview
-
-```text
-app.py (Streamlit HITL UI)
-   ├─ policy_diff.compare_policy_versions
-   ├─ change_analyzer.analyze_policy_changes
-   │     ├─ EXAMPLE1 → PolicyRule (JSON)
-   │     └─ ambiguous integral → abstain
-   ├─ rule_engine.apply_rule  (after Approve)
-   └─ audit_log.append_audit_event
-evaluation/run_evaluation.py → results.json / results.md
-```
-
----
-
-## Deliverables map (assessment package)
-
-| Cotiviti deliverable | Path |
-| --- | --- |
-| Hackathon POC (Streamlit app) | `app.py`, `src/`, `data/` |
-| Written report (≈2 pages + bibliography) | `report/PolicyGuard_Report.docx`, `report/PolicyGuard_Report.md` |
-| Slide presentation | `slides/PolicyGuard_Presentation.pptx` |
-| Video (candidate must record on camera) | `video/SCRIPT.md`, `video/RECORDING_CHECKLIST.md`, `video/PLACEHOLDER.md` — **MP4 not included until you record** |
-| Resume | `resume/Haorui_Wang_Resume_2027.pdf` (and ML variant) |
-| Evaluation | `evaluation/gold_set.json`, `evaluation/results.md`, `evaluation/results.json` |
-| Screenshots | `screenshots/` |
-| Code documentation | `docs/CODE_WALKTHROUGH.md`, `docs/FUNCTION_REFERENCE.md` |
-
-Submission reminder (human steps): upload all files to a **public GitHub** repo (including the MP4 in-repo—no Drive/YouTube links), share with `jesus.hurtado@cotiviti.com`, and email that address with subject  
-`INTERN - [Position Applied For] - [Full Name] - [University Name]`.
-
----
+“Paid amount in scope” is not an overpayment, recovery, or savings estimate. It is only a demonstration aggregation over synthetic records.
 
 ## Evaluation
 
-Manually labeled gold set for the demo passages; metrics computed by `evaluation/run_evaluation.py`:
+Run:
 
-- Change-detection precision / recall  
-- Effective-date extraction accuracy  
-- Source-citation coverage  
-- Rule-test pass rate  
-- Abstention correctness  
-- Simulated reviewer acceptance  
+```bash
+python scripts/run_evaluation.py
+pytest -q
+```
 
-See `evaluation/results.md` for measured values. **Methodology is POC-scale** (tiny demo set)—not a production performance claim.
+Current local checks:
 
----
+- **8/8** handcrafted rule assertions passed
+- **6/6** entity-delta checks passed
+- **5/5** change records include source provenance
+- **2/2** abstention assertions passed
+- **9/9** automated tests passed
 
-## Ethics, PHI, and source manifest
+These are software and synthetic-fixture checks—not production model accuracy. Full results are written to [`evaluation/results.json`](evaluation/results.json).
 
-- Claims are **synthetic**; no PHI or real patient data.  
-- Policy files are **minimal synthetic demonstration excerpts** inspired by CMS Medicare NCCI Policy Manual Chapter XI *style*. They are **not** a republication of full CMS NCCI manuals or CPT content.  
-- Conceptual citations and local adaptation notes: `data/source_manifest.csv`.
+## Interface
 
----
+### 1. Executive overview
 
-## Project layout
+A portfolio-level view of materiality, automation readiness, risk, review volume, and synthetic paid-amount exposure.
+
+### 2. Policy intelligence
+
+- highlighted before/after comparison
+- semantic similarity
+- code, date, currency, modifier, and percentage deltas
+- official source cards with locators
+- optional local TXT/PDF comparison and downloadable JSON
+
+### 3. Rule studio
+
+- validated condition table
+- downloadable declarative rule JSON
+- deterministic dry run
+- no execution of generated code
+- explicit abstention path
+
+### 4. Claim impact
+
+- unique claims and providers in scope
+- monthly review trend
+- policy-level volume
+- provider concentration bubble chart
+- Q3014 fee-variance distribution
+- prioritized, downloadable reviewer queue
+
+### 5. Governance
+
+- Cotiviti/NIST-inspired control mapping
+- reviewer approval, rejection, and escalation
+- exportable JSONL audit trail
+- transparent synthetic evaluation and limitations
+
+## Repository structure
 
 ```text
-cotiviti-policyguard/
-├── README.md
-├── requirements.txt
-├── app.py
+.
+├── app.py                         # Streamlit interface
+├── assets/                        # Architecture and interface preview
 ├── data/
-│   ├── policy_2025.txt
-│   ├── policy_2026.txt
-│   ├── synthetic_claims.csv
+│   ├── policies/policy_catalog.json
 │   ├── source_manifest.csv
-│   └── fixtures/sample_audit.jsonl
+│   └── synthetic_claims.csv
+├── docs/                          # Demo, design, source, migration, and data notes
+├── evaluation/results.json        # Transparent local benchmark
+├── resume/Haorui_Wang_Resume.pdf
+├── scripts/run_evaluation.py
 ├── src/
-│   ├── policy_diff.py
-│   ├── change_analyzer.py
-│   ├── schema.py
+│   ├── audit.py
+│   ├── catalog.py
+│   ├── demo_data.py
+│   ├── impact.py
+│   ├── models.py
 │   ├── rule_engine.py
-│   └── audit_log.py
-├── evaluation/
+│   ├── semantic_diff.py
+│   └── ui.py
 ├── tests/
-├── docs/
-├── report/
-├── slides/
-├── video/
-├── resume/
-├── screenshots/
-└── scripts/
+├── report/                        # Final Word report belongs here
+├── slides/                        # Final PowerPoint belongs here
+└── video/                         # Final MP4 belongs here
 ```
+
+## Source governance
+
+The repository stores concise paraphrases and metadata, not complete policy manuals. The source pack uses official pages and documents from:
+
+- [CMS Medicare NCCI Policy Manual](https://www.cms.gov/medicare/coding-billing/national-correct-coding-initiative-ncci-edits/medicare-ncci-policy-manual)
+- [CMS Medicare Physician Fee Schedule resources](https://www.cms.gov/medicare/payment/fee-schedules/physician)
+- [CMS Therapy Services](https://www.cms.gov/medicare/coding-billing/therapy-services)
+- [CMS Telehealth Services](https://www.cms.gov/medicare/coverage/telehealth/list-services)
+- [Cotiviti Responsible AI](https://www.cotiviti.com/about/responsible-ai-use)
+- [NIST AI RMF Generative AI Profile](https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence)
+
+See [`docs/SOURCE_METHOD.md`](docs/SOURCE_METHOD.md) and [`data/source_manifest.csv`](data/source_manifest.csv).
+
+## Safety boundaries
+
+PolicyGuard is not a claims-adjudication engine, coding authority, legal interpretation, clinical decision-support system, or production payment-integrity model. It does not establish coverage, medical necessity, overpayment, fraud, abuse, or provider intent.
+
+Every output is a review recommendation. Production use would require licensed content, credentialed experts, security controls, access governance, retrospective validation, monitoring, rollback, and integration testing.
+
+## Assessment deliverables
+
+Before submission, confirm the public repository directly contains:
+
+- final two-page Microsoft Word report plus bibliography page
+- final Microsoft PowerPoint
+- working POC and source code
+- MP4 recording no longer than five minutes, with the presenter on camera
+- current resume
+
+The application upgrade does not automatically replace an existing report, slide deck, or video. Use [`docs/MIGRATION_GUIDE.md`](docs/MIGRATION_GUIDE.md) to merge it safely.

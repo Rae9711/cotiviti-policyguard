@@ -1,125 +1,126 @@
 {
-  "methodology_note": "Labels were assigned by inspecting data/policy_2025.txt and data/policy_2026.txt. This is a tiny demonstration set for assessment evaluation, not a statistically powered benchmark.",
-  "gold_change_ids": [
-    "CHG-EXAMPLE1-EFFECTIVE-DATE",
-    "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-    "CHG-EXAMPLE2-SCREENING-DELETE"
-  ],
-  "change_detection": {
-    "true_positives": 3,
-    "false_positives": 0,
-    "false_negatives": 0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "f1": 1.0,
-    "predicted_ids": [
-      "CHG-EXAMPLE1-EFFECTIVE-DATE",
-      "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-      "CHG-EXAMPLE2-SCREENING-DELETE"
-    ],
-    "gold_ids": [
-      "CHG-EXAMPLE1-EFFECTIVE-DATE",
-      "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-      "CHG-EXAMPLE2-SCREENING-DELETE"
-    ]
+  "generated_at_utc": "2026-08-06T14:24:35.629305+00:00",
+  "status": "passed",
+  "scope_note": "POC benchmark only: 8 handcrafted rule assertions, 6 entity-delta checks, 5 curated change records, and 1 explicit abstention scenario. These results do not estimate production accuracy.",
+  "metrics": {
+    "rule_assertions_passed": 8,
+    "rule_assertions_total": 8,
+    "entity_checks_passed": 6,
+    "entity_checks_total": 6,
+    "source_coverage": 1.0,
+    "abstention_checks_passed": 2,
+    "abstention_checks_total": 2
   },
-  "effective_date_extraction": {
-    "scored": 2,
-    "correct": 2,
-    "accuracy": 1.0,
-    "details": [
-      {
-        "change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE",
-        "expected": "2026-01-01",
-        "predicted": "2026-01-01",
-        "correct": true
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-        "expected": null,
-        "predicted": null,
-        "correct": true
-      }
-    ]
-  },
-  "source_citation": {
-    "required": 3,
-    "covered": 3,
-    "coverage": 1.0,
-    "details": [
-      {
-        "change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE",
-        "cited": true
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-        "cited": true
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-SCREENING-DELETE",
-        "cited": true
-      }
-    ]
-  },
-  "abstention": {
-    "scored": 3,
-    "correct": 3,
-    "accuracy": 1.0,
-    "details": [
-      {
-        "change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE",
-        "abstain_ok": true,
-        "propose_ok": true,
-        "correct": true
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-        "abstain_ok": true,
-        "propose_ok": true,
-        "correct": true
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-SCREENING-DELETE",
-        "abstain_ok": true,
-        "propose_ok": true,
-        "correct": true
-      }
-    ]
-  },
-  "rule_tests": {
-    "expected_flagged_count": 8,
-    "actual_flagged_count": 8,
-    "missing_flagged": [],
-    "unexpected_flagged": [],
-    "wrongly_flagged_examples": [],
-    "pass_rate": 1.0,
-    "passed_checks": 11,
-    "total_checks": 11
-  },
-  "reviewer_acceptance": {
-    "simulated_total": 3,
-    "simulated_approve_rate": 0.3333333333333333,
-    "simulated_reject_rate": 0.3333333333333333,
-    "simulated_expert_rate": 0.3333333333333333,
-    "simulated_decisions": [
-      {
-        "change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE",
-        "decision": "approve"
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
-        "decision": "request_expert_interpretation"
-      },
-      {
-        "change_id": "CHG-EXAMPLE2-SCREENING-DELETE",
-        "decision": "reject"
-      }
-    ],
-    "fixture_audit_counts": {
-      "approve": 1,
-      "request_expert_interpretation": 1,
-      "reject": 1
+  "rule_checks": [
+    {
+      "change_id": "NCCI-94662-RETIREMENT",
+      "case": "94662 post deletion",
+      "expected": true,
+      "observed": true,
+      "passed": true
     },
-    "note": "Reviewer acceptance is simulated from gold labels for the demo; fixture audit counts are illustrative of log schema only."
-  }
+    {
+      "change_id": "NCCI-94662-RETIREMENT",
+      "case": "94662 prior year",
+      "expected": false,
+      "observed": false,
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-KX-THRESHOLD-2026",
+      "case": "KX missing over threshold",
+      "expected": true,
+      "observed": true,
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-KX-THRESHOLD-2026",
+      "case": "KX present over threshold",
+      "expected": false,
+      "observed": false,
+      "passed": true
+    },
+    {
+      "change_id": "TELEHEALTH-Q3014-FEE-2026",
+      "case": "Q3014 outside tolerance",
+      "expected": true,
+      "observed": true,
+      "passed": true
+    },
+    {
+      "change_id": "TELEHEALTH-Q3014-FEE-2026",
+      "case": "Q3014 within tolerance",
+      "expected": false,
+      "observed": false,
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-RTM-CODES-2026",
+      "case": "RTM unmapped",
+      "expected": true,
+      "observed": true,
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-RTM-CODES-2026",
+      "case": "RTM mapped",
+      "expected": false,
+      "observed": false,
+      "passed": true
+    }
+  ],
+  "entity_checks": [
+    {
+      "change_id": "NCCI-94662-RETIREMENT",
+      "category": "dates",
+      "entity": "January 1, 2026",
+      "direction": "added",
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-KX-THRESHOLD-2026",
+      "category": "currency",
+      "entity": "$2,480",
+      "direction": "added",
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-KX-THRESHOLD-2026",
+      "category": "currency",
+      "entity": "$2,410",
+      "direction": "removed",
+      "passed": true
+    },
+    {
+      "change_id": "TELEHEALTH-Q3014-FEE-2026",
+      "category": "currency",
+      "entity": "$31.85",
+      "direction": "added",
+      "passed": true
+    },
+    {
+      "change_id": "TELEHEALTH-Q3014-FEE-2026",
+      "category": "currency",
+      "entity": "$31.01",
+      "direction": "removed",
+      "passed": true
+    },
+    {
+      "change_id": "THERAPY-RTM-CODES-2026",
+      "category": "codes",
+      "entity": "98984",
+      "direction": "added",
+      "passed": true
+    }
+  ],
+  "abstention_checks": [
+    {
+      "check": "no rule template",
+      "passed": true
+    },
+    {
+      "check": "reason documented",
+      "passed": true
+    }
+  ]
 }
