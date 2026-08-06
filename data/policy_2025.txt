@@ -1,0 +1,34 @@
+================================================================================
+SYNTHETIC DEMONSTRATION EXCERPT — FOR ASSESSMENT POC ONLY
+Inspired by the style of CMS Medicare NCCI Policy Manual Chapter XI.
+This is NOT an official CMS document and is NOT a republication of CPT or
+NCCI content. Fictional procedure codes (EXAMPLE1, EXAMPLE2) are used.
+================================================================================
+
+CMS Medicare NCCI Policy Manual — Chapter XI (Demonstration)
+Version: Calendar Year 2025 Demo Excerpt
+Section: XI.D — Demo Procedure Reporting Guidance
+
+1. General principles
+When reporting evaluation and management services together with other
+procedures on the same date of service, documentation must support medical
+necessity for each reported service.
+
+2. Demo procedure EXAMPLE1
+Procedure code EXAMPLE1 may be reported when the clinical documentation
+supports the described service. No special date-based restriction applies
+to EXAMPLE1 under this 2025 demonstration excerpt.
+
+3. Demo procedure EXAMPLE2
+Procedure code EXAMPLE2 is reportable with modifier -59 when a distinct
+procedural service is documented. Routine use of EXAMPLE2 for screening
+purposes is not addressed in this excerpt.
+
+4. Documentation expectations
+Providers should retain supporting notes sufficient to substantiate
+code selection. Ambiguous or incomplete documentation may result in
+claim review.
+
+5. Effective period
+This demonstration excerpt applies to dates of service in calendar year
+2025 unless superseded by a later demonstration version.

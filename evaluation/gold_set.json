@@ -1,0 +1,58 @@
+{
+  "description": "Manually labeled gold set for PolicyGuard demo policy excerpts (POC-scale).",
+  "methodology_note": "Labels were assigned by inspecting data/policy_2025.txt and data/policy_2026.txt. This is a tiny demonstration set for assessment evaluation, not a statistically powered benchmark.",
+  "expected_changes": [
+    {
+      "change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE",
+      "should_detect": true,
+      "change_type": "revision",
+      "expected_effective_date": "2026-01-01",
+      "requires_source_citation": true,
+      "should_abstain": false,
+      "should_propose_rule": true,
+      "rule_id": "RULE-EXAMPLE1-DOS-2026",
+      "notes": "Machine-clear EXAMPLE1 date-of-service flagging language."
+    },
+    {
+      "change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS",
+      "should_detect": true,
+      "change_type": "ambiguous",
+      "expected_effective_date": null,
+      "requires_source_citation": true,
+      "should_abstain": true,
+      "should_propose_rule": false,
+      "rule_id": null,
+      "notes": "Ambiguous integral language must abstain / request expert interpretation."
+    },
+    {
+      "change_id": "CHG-EXAMPLE2-SCREENING-DELETE",
+      "should_detect": true,
+      "change_type": "deletion",
+      "expected_effective_date": null,
+      "requires_source_citation": true,
+      "should_abstain": false,
+      "should_propose_rule": false,
+      "rule_id": null,
+      "notes": "Informational deletion of screening-purpose sentence."
+    }
+  ],
+  "rule_test_expectations": {
+    "rule_id": "RULE-EXAMPLE1-DOS-2026",
+    "flagged_claim_ids": [
+      "CLM-0009",
+      "CLM-0010",
+      "CLM-0012",
+      "CLM-0015",
+      "CLM-0017",
+      "CLM-0019",
+      "CLM-0022",
+      "CLM-0025"
+    ],
+    "not_flagged_examples": ["CLM-0001", "CLM-0003", "CLM-0011"]
+  },
+  "simulated_reviewer_decisions": [
+    {"change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE", "decision": "approve"},
+    {"change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS", "decision": "request_expert_interpretation"},
+    {"change_id": "CHG-EXAMPLE2-SCREENING-DELETE", "decision": "reject"}
+  ]
+}

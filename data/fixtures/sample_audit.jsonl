@@ -1,0 +1,6 @@
+{"timestamp": "2026-08-05T18:00:00+00:00", "event_type": "change_detected", "payload": {"change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE", "abstain": false, "rule_id": "RULE-EXAMPLE1-DOS-2026", "change_type": "revision"}}
+{"timestamp": "2026-08-05T18:01:00+00:00", "event_type": "review_decision", "payload": {"change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE", "decision": "approve", "rule_id": "RULE-EXAMPLE1-DOS-2026", "abstain": false, "reviewer_note": "fixture"}}
+{"timestamp": "2026-08-05T18:02:00+00:00", "event_type": "claim_impact_run", "payload": {"change_id": "CHG-EXAMPLE1-EFFECTIVE-DATE", "rule_id": "RULE-EXAMPLE1-DOS-2026", "flagged_for_review": 8, "total_claims": 25}}
+{"timestamp": "2026-08-05T18:03:00+00:00", "event_type": "review_decision", "payload": {"change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS", "decision": "request_expert_interpretation", "rule_id": null, "abstain": true, "reviewer_note": "fixture"}}
+{"timestamp": "2026-08-05T18:04:00+00:00", "event_type": "abstention", "payload": {"change_id": "CHG-EXAMPLE2-INTEGRAL-AMBIGUOUS", "reason": "Ambiguous integral language"}}
+{"timestamp": "2026-08-05T18:05:00+00:00", "event_type": "review_decision", "payload": {"change_id": "CHG-EXAMPLE2-SCREENING-DELETE", "decision": "reject", "rule_id": null, "abstain": false, "reviewer_note": "informational only"}}
