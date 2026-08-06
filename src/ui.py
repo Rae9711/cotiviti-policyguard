@@ -261,9 +261,10 @@ def render_hero() -> None:
             </div>
             <div class="pg-narrative-block">
               <span class="label">Result</span>
-              <p>A working HITL proof of concept: source-grounded change → testable rule
-              or explicit abstention → review queue + audit trail with
-              <code>automatic_claim_action: false</code>.</p>
+              <p>Speeds policy-change intake into a reviewable workflow, improves
+              auditability with source-grounded proposals, and raises safety by
+              abstaining when automation would be unjustified—demonstrated on
+              synthetic claims with human-gated decisions.</p>
             </div>
             <div class="pg-narrative-block">
               <span class="label">Cotiviti fit</span>
