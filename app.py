@@ -153,6 +153,7 @@ def page_policy_intelligence(catalog, change_id: str) -> None:
             pd.DataFrame([d.__dict__ for d in deltas]),
             use_container_width=True,
             hide_index=True,
+            key="pi_entity_deltas",
         )
 
     st.markdown("**Official source evidence**")
@@ -164,6 +165,7 @@ def page_policy_intelligence(catalog, change_id: str) -> None:
         data=json.dumps(comparison.to_dict(), indent=2),
         file_name=f"{change.change_id}_comparison.json",
         mime="application/json",
+        key="pi_download_comparison",
     )
 
     with st.expander("Compare local TXT/PDF uploads (in memory)"):
@@ -211,7 +213,12 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
             for c in rule.conditions
         ]
     )
-    st.dataframe(conditions, use_container_width=True, hide_index=True)
+    st.dataframe(
+        conditions,
+        use_container_width=True,
+        hide_index=True,
+        key="rule_conditions_df",
+    )
 
     rule_json = rule.model_dump()
     st.download_button(
@@ -219,6 +226,7 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
         data=json.dumps(rule_json, indent=2, default=str),
         file_name=f"{rule.rule_id}.json",
         mime="application/json",
+        key="rule_download_json",
     )
 
     with st.expander("Validated rule JSON", expanded=False):
@@ -228,7 +236,12 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
     st.metric("Dry-run matches", dry["matched_count"])
     st.caption("Deterministic interpreter only — no generated Python/SQL is executed.")
     if dry["matched_count"]:
-        st.dataframe(dry["sample"], use_container_width=True, hide_index=True)
+        st.dataframe(
+            dry["sample"],
+            use_container_width=True,
+            hide_index=True,
+            key="rule_dry_run_sample",
+        )
 
 
 def page_claim_impact(portfolio: dict) -> None:
@@ -283,12 +296,18 @@ def page_claim_impact(portfolio: dict) -> None:
 
     st.markdown("**Prioritized reviewer queue**")
     queue = portfolio["queue"]
-    st.dataframe(queue.head(40), use_container_width=True, hide_index=True)
+    st.dataframe(
+        queue.head(40),
+        use_container_width=True,
+        hide_index=True,
+        key="impact_reviewer_queue",
+    )
     st.download_button(
         "Download reviewer queue CSV",
         data=queue.to_csv(index=False),
         file_name="reviewer_queue.csv",
         mime="text/csv",
+        key="impact_download_queue",
     )
 
 
@@ -346,7 +365,12 @@ def page_governance(catalog, change_id: str) -> None:
     events = read_audit_events(AUDIT_PATH)
     st.markdown("**Audit trail**")
     if events:
-        st.dataframe(pd.DataFrame(events), use_container_width=True, hide_index=True)
+        st.dataframe(
+            pd.DataFrame(events),
+            use_container_width=True,
+            hide_index=True,
+            key="gov_audit_trail",
+        )
     else:
         st.info("No audit events yet. Record a decision to populate the trail.")
 
@@ -355,6 +379,7 @@ def page_governance(catalog, change_id: str) -> None:
         data=audit_events_jsonl(AUDIT_PATH) or "",
         file_name="policyguard_audit.jsonl",
         mime="application/jsonl",
+        key="gov_download_audit",
     )
 
     if EVAL_RESULTS.exists():
