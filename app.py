@@ -102,10 +102,15 @@ def page_executive(catalog, portfolio: dict) -> None:
         st.plotly_chart(
             opportunity_matrix_fig(portfolio["opportunity_matrix"]),
             use_container_width=True,
+            key="exec_opportunity_matrix",
         )
     with right:
         st.markdown("**Synthetic review volume by change**")
-        st.plotly_chart(volume_bar_fig(portfolio["per_change"]), use_container_width=True)
+        st.plotly_chart(
+            volume_bar_fig(portfolio["per_change"]),
+            use_container_width=True,
+            key="exec_volume_bar",
+        )
     st.caption(
         "Paid amount in scope is a synthetic aggregation for demonstration only — "
         "not an overpayment, recovery, or savings estimate."
@@ -247,10 +252,18 @@ def page_claim_impact(portfolio: dict) -> None:
     t1, t2 = st.columns(2)
     with t1:
         st.markdown("**Monthly review-event trend**")
-        st.plotly_chart(monthly_trend_fig(portfolio["monthly_trend"]), use_container_width=True)
+        st.plotly_chart(
+            monthly_trend_fig(portfolio["monthly_trend"]),
+            use_container_width=True,
+            key="impact_monthly_trend",
+        )
     with t2:
         st.markdown("**Policy-level review volume**")
-        st.plotly_chart(volume_bar_fig(portfolio["per_change"]), use_container_width=True)
+        st.plotly_chart(
+            volume_bar_fig(portfolio["per_change"]),
+            use_container_width=True,
+            key="impact_volume_bar",
+        )
 
     p1, p2 = st.columns(2)
     with p1:
@@ -258,10 +271,15 @@ def page_claim_impact(portfolio: dict) -> None:
         st.plotly_chart(
             provider_bubble_fig(portfolio["provider_concentration"]),
             use_container_width=True,
+            key="impact_provider_bubble",
         )
     with p2:
         st.markdown("**Q3014 fee-variance distribution**")
-        st.plotly_chart(q3014_hist_fig(portfolio["q3014_distribution"]), use_container_width=True)
+        st.plotly_chart(
+            q3014_hist_fig(portfolio["q3014_distribution"]),
+            use_container_width=True,
+            key="impact_q3014_hist",
+        )
 
     st.markdown("**Prioritized reviewer queue**")
     queue = portfolio["queue"]
