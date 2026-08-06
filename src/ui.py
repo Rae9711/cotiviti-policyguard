@@ -54,7 +54,7 @@ def inject_styles() -> None:
         .pg-hero {{
             background: linear-gradient(120deg, #14182b 0%, #2a2460 55%, #4b3bb8 100%);
             color: white;
-            padding: 1.35rem 1.5rem 1.2rem 1.5rem;
+            padding: 1.35rem 1.5rem 1.25rem 1.5rem;
             border-radius: 18px;
             margin-bottom: 1rem;
             box-shadow: 0 10px 30px rgba(28, 24, 70, 0.18);
@@ -65,24 +65,69 @@ def inject_styles() -> None:
             font-weight: 700;
             letter-spacing: -0.02em;
         }}
-        .pg-hero p {{
+        .pg-hero > p {{
             margin: 0;
             opacity: 0.92;
             max-width: 52rem;
             line-height: 1.45;
         }}
-        .pg-badges {{
+        .pg-narrative {{
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.65rem;
+            margin-top: 1rem;
+        }}
+        @media (max-width: 900px) {{
+            .pg-narrative {{
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }}
+        }}
+        @media (max-width: 520px) {{
+            .pg-narrative {{
+                grid-template-columns: 1fr;
+            }}
+        }}
+        .pg-narrative-block {{
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 12px;
+            padding: 0.7rem 0.8rem;
+            min-width: 0;
+        }}
+        .pg-narrative-block .label {{
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            opacity: 0.78;
+            margin-bottom: 0.3rem;
+        }}
+        .pg-narrative-block p {{
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            opacity: 0.95;
+        }}
+        .pg-narrative-block code {{
+            font-size: 0.74rem;
+            background: rgba(0,0,0,0.25);
+            padding: 0.05rem 0.28rem;
+            border-radius: 4px;
+        }}
+        .pg-constraints {{
             display: flex;
             flex-wrap: wrap;
-            gap: 0.45rem;
-            margin-top: 0.85rem;
+            gap: 0.4rem;
+            margin-top: 0.75rem;
         }}
-        .pg-badge {{
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.18);
-            padding: 0.25rem 0.65rem;
+        .pg-constraint {{
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 0.18rem 0.55rem;
             border-radius: 999px;
-            font-size: 0.78rem;
+            font-size: 0.72rem;
+            opacity: 0.85;
         }}
         .pg-kpi {{
             background: white;
@@ -194,18 +239,44 @@ def inject_styles() -> None:
 
 
 def render_hero() -> None:
-    """Presentation-ready hero banner."""
+    """Presentation-ready hero banner with Problem / Approach / Result / Cotiviti fit."""
     st.markdown(
         """
         <div class="pg-hero">
           <h1>PolicyGuard Intelligence Studio</h1>
           <p>From authoritative policy change to a source-grounded, testable review
           workflow—without autonomous claim denial or clinical decision-making.</p>
-          <div class="pg-badges">
-            <span class="pg-badge">Public CMS sources</span>
-            <span class="pg-badge">Synthetic claims only</span>
-            <span class="pg-badge">Deterministic rules</span>
-            <span class="pg-badge">Human approval required</span>
+          <div class="pg-narrative">
+            <div class="pg-narrative-block">
+              <span class="label">Problem</span>
+              <p>Healthcare payment policies change; translating written policy into
+              consistent, auditable review logic is slow and error-prone—and unsafe
+              automation can over-claim denials.</p>
+            </div>
+            <div class="pg-narrative-block">
+              <span class="label">Approach</span>
+              <p>Compare authoritative policy versions, attach source evidence, propose
+              Pydantic-validated declarative rules (or abstain), simulate impact on
+              synthetic claims, require human approve/reject/escalate.</p>
+            </div>
+            <div class="pg-narrative-block">
+              <span class="label">Result</span>
+              <p>A working HITL proof of concept: source-grounded change → testable rule
+              or explicit abstention → review queue + audit trail with
+              <code>automatic_claim_action: false</code>.</p>
+            </div>
+            <div class="pg-narrative-block">
+              <span class="label">Cotiviti fit</span>
+              <p>Aligns with Cotiviti’s payment-accuracy / Payment Policy Management need
+              to tailor, test, and execute policies with transparency and
+              accountability—not a generic chatbot demo.</p>
+            </div>
+          </div>
+          <div class="pg-constraints">
+            <span class="pg-constraint">Public CMS sources</span>
+            <span class="pg-constraint">Synthetic claims only</span>
+            <span class="pg-constraint">No automatic claim denial</span>
+            <span class="pg-constraint">Human approval required</span>
           </div>
         </div>
         """,
