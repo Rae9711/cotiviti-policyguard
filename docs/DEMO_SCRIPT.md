@@ -1,6 +1,10 @@
 # Five-minute demonstration script
 
+Evaluator-facing walkthrough (tabs, what to look for, careful language): [`USER_GUIDE.md`](USER_GUIDE.md).
+
 The assessment video must remain under five minutes. This route shows breadth without clicking through every chart.
+
+**Thesis to state early:** Policy change → source-grounded evidence → validated rule (or abstain) → synthetic claim review → human approval. No automatic claim action.
 
 ## 0:00–0:35 — Problem and thesis
 

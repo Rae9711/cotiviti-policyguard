@@ -30,13 +30,17 @@ from src.demo_data import load_claims
 from src.impact import dry_run_rule, run_portfolio
 from src.semantic_diff import compare_texts, extract_text_from_upload
 from src.ui import (
+    chart_why,
     inject_styles,
     kpi_row,
     monthly_trend_fig,
     opportunity_matrix_fig,
+    optional_detail,
     provider_bubble_fig,
     q3014_hist_fig,
     render_hero,
+    render_thesis_banner,
+    section_help,
     source_card,
     volume_bar_fig,
 )
@@ -45,28 +49,126 @@ ROOT = Path(__file__).resolve().parent
 AUDIT_PATH = ROOT / "data" / "audit_log.jsonl"
 EVAL_RESULTS = ROOT / "evaluation" / "results.json"
 
+# Recommended evaluator path
+RECOMMENDED_CHANGE_ID = "THERAPY-KX-THRESHOLD-2026"
+ABSTENTION_CHANGE_ID = "THERAPY-SKILLED-VS-FITNESS"
+ALT_SCENARIO_ID = "NCCI-94662-RETIREMENT"
+
 
 def _init_state() -> None:
     if "selected_change_id" not in st.session_state:
-        st.session_state.selected_change_id = "THERAPY-KX-THRESHOLD-2026"
+        st.session_state.selected_change_id = RECOMMENDED_CHANGE_ID
+    if "guide_seen" not in st.session_state:
+        st.session_state.guide_seen = False
+    if "show_guide" not in st.session_state:
+        st.session_state.show_guide = True
+    if "simple_demo_mode" not in st.session_state:
+        st.session_state.simple_demo_mode = True
 
 
-def _sidebar(catalog, claims: pd.DataFrame) -> str:
+def _render_demo_guide() -> None:
+    """Interactive Evaluator / Demo Guide panel."""
+    with st.expander(
+        "Evaluator / Demo Guide",
+        expanded=st.session_state.show_guide and not st.session_state.guide_seen,
+    ):
+        st.markdown(
+            """
+**Main function:** turn a public policy version change into source-grounded evidence,
+a validated review rule (or an explicit abstention), a synthetic claim-impact preview,
+and a human Approve / Reject / Escalate decision — **with no automatic claim action**.
+
+### 60-second path
+1. **01 · Executive overview** — portfolio of five policy patterns
+2. **02 · Policy intelligence** — before/after + official source cards
+3. **03 · Rule studio** — validated JSON proposal or abstention
+4. **04 · Claim impact** — flagged-for-review volume (not fraud/savings)
+5. **05 · Governance** — record a human decision + download audit
+
+### What to look for on each tab
+- **Executive:** five curated changes; one required abstention; opportunity matrix is supporting context
+- **Policy intelligence:** highlighted deltas tied to official CMS locators
+- **Rule studio:** declarative JSON for human review — not executable auto-denial code
+- **Claim impact:** synthetic claims *flagged for review*; “paid amount in scope” ≠ savings
+- **Governance:** Approve / Reject / Escalate with `automatic_claim_action=false`
+
+### Recommended scenarios
+- Start with **Therapy KX threshold increased** (or **94662 retirement**)
+- Then switch to **Skilled-therapy versus general-fitness** to see abstention as a feature
+
+Charts and matrices are **supporting evidence**, not the point. The point is the
+controlled workflow ending in a human gate.
+
+Full write-up: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) · demo script: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)
+            """
+        )
+        if st.button("Got it — hide coach marks", key="guide_dismiss_btn"):
+            st.session_state.guide_seen = True
+            st.session_state.show_guide = False
+            st.rerun()
+
+
+def _render_first_run_coach() -> None:
+    if st.session_state.guide_seen:
+        return
+    st.info(
+        "**Start here:** set Focus change to **Therapy KX threshold increased** "
+        "(or **Ventilation management code 94662 retired**), walk tabs 01→05, "
+        "then switch to **Skilled-therapy versus general-fitness** to see "
+        "abstention — refusing to automate when claim fields are insufficient. "
+        "Use the Evaluator / Demo Guide above for the 60-second path."
+    )
+
+
+def _sidebar(catalog, claims: pd.DataFrame) -> tuple[str, bool]:
     with st.sidebar:
         st.markdown("### PG  PolicyGuard")
         st.caption("CMS payment-policy intelligence pack")
         st.caption("Assessment build · v2.0")
         st.divider()
+
+        simple_mode = st.toggle(
+            "Simple demo mode",
+            help="Emphasizes the recommended scenario and collapses secondary charts. "
+            "Keep Approve/Reject/Escalate and abstention visible.",
+            key="simple_demo_mode",
+        )
+
+        show_guide = st.toggle(
+            "Show guide",
+            help="Show or hide the Evaluator / Demo Guide panel.",
+            key="show_guide",
+        )
+
+        st.divider()
         st.markdown("**Workspace**")
         st.write(catalog.workspace.name)
         titles = {c.change_id: c.title for c in catalog.changes}
+        options = list(titles.keys())
+
+        if simple_mode and RECOMMENDED_CHANGE_ID in options:
+            st.caption(
+                f"Recommended: **{titles[RECOMMENDED_CHANGE_ID]}** · "
+                f"also try {titles.get(ALT_SCENARIO_ID, '94662')} · "
+                f"then abstention: {titles.get(ABSTENTION_CHANGE_ID, 'skilled vs fitness')}"
+            )
+            # Put recommended first in the list for clarity
+            options = [RECOMMENDED_CHANGE_ID] + [
+                cid for cid in options if cid != RECOMMENDED_CHANGE_ID
+            ]
+
         selected = st.selectbox(
             "Focus change",
-            options=list(titles.keys()),
-            format_func=lambda cid: titles[cid],
-            index=list(titles.keys()).index(st.session_state.selected_change_id)
-            if st.session_state.selected_change_id in titles
+            options=options,
+            format_func=lambda cid: (
+                f"★ {titles[cid]}" if cid == RECOMMENDED_CHANGE_ID and simple_mode else titles[cid]
+            ),
+            index=options.index(st.session_state.selected_change_id)
+            if st.session_state.selected_change_id in options
             else 0,
+            help="Select a curated CMS policy-change scenario. "
+            "Therapy KX is the default evaluator path; skilled-vs-fitness shows abstention.",
+            key="focus_change_select",
         )
         st.session_state.selected_change_id = selected
         st.divider()
@@ -77,12 +179,20 @@ def _sidebar(catalog, claims: pd.DataFrame) -> str:
             unsafe_allow_html=True,
         )
         st.caption("Does not perform autonomous claim denial.")
-    return selected
+        st.caption("User guide: docs/USER_GUIDE.md")
+    return selected, simple_mode
 
 
-def page_executive(catalog, portfolio: dict) -> None:
+def page_executive(catalog, portfolio: dict, simple_mode: bool) -> None:
     st.subheader("Executive signal")
     st.caption("Policy materiality, automation readiness, and synthetic operational exposure.")
+    section_help(
+        "What is this?",
+        "Portfolio view of curated CMS policy changes. Shows how many proposals "
+        "are executable vs. required abstentions, and where materiality meets "
+        "automation readiness. **This is context for the workflow — not the main demo.**",
+    )
+
     k = portfolio["kpis"]
     executable = sum(1 for c in catalog.changes if not c.abstains)
     abstentions = sum(1 for c in catalog.changes if c.abstains)
@@ -95,22 +205,36 @@ def page_executive(catalog, portfolio: dict) -> None:
             ("Synthetic Flag Rate", f"{k['flag_rate'] * 100:.1f}%"),
         ]
     )
+    st.caption(
+        "Required abstentions are intentional: when structured claim fields cannot "
+        "establish clinical purpose, PolicyGuard refuses to automate."
+    )
     st.write("")
-    left, right = st.columns(2)
-    with left:
-        st.markdown("**Policy opportunity matrix**")
-        st.plotly_chart(
-            opportunity_matrix_fig(portfolio["opportunity_matrix"]),
-            use_container_width=True,
-            key="exec_opportunity_matrix",
-        )
-    with right:
-        st.markdown("**Synthetic review volume by change**")
-        st.plotly_chart(
-            volume_bar_fig(portfolio["per_change"]),
-            use_container_width=True,
-            key="exec_volume_bar",
-        )
+
+    with optional_detail("opportunity matrix & volume charts", simple_mode):
+        left, right = st.columns(2)
+        with left:
+            st.markdown("**Policy opportunity matrix**")
+            chart_why(
+                "Why this chart exists: ranks changes by materiality vs. automation "
+                "readiness so reviewers prioritize — it does not trigger claim action."
+            )
+            st.plotly_chart(
+                opportunity_matrix_fig(portfolio["opportunity_matrix"]),
+                use_container_width=True,
+                key="exec_opportunity_matrix",
+            )
+        with right:
+            st.markdown("**Synthetic review volume by change**")
+            chart_why(
+                "Why this chart exists: shows how many synthetic claims each rule "
+                "would route to human review — volume for prioritization, not savings."
+            )
+            st.plotly_chart(
+                volume_bar_fig(portfolio["per_change"]),
+                use_container_width=True,
+                key="exec_volume_bar",
+            )
     st.caption(
         "Paid amount in scope is a synthetic aggregation for demonstration only — "
         "not an overpayment, recovery, or savings estimate."
@@ -121,13 +245,28 @@ def page_policy_intelligence(catalog, change_id: str) -> None:
     change = get_change(change_id, catalog)
     st.subheader("Policy intelligence")
     st.caption("Source-grounded before/after comparison with entity extraction.")
+    section_help(
+        "What is this?",
+        "Step **Compare → Evidence**. Side-by-side policy snapshots with highlighted "
+        "deltas and official CMS source cards. Every proposed rule must be traceable "
+        "to a locator — this tab proves the change is real before any rule is drafted.",
+    )
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Materiality", change.materiality_score)
-    c2.metric("Automation readiness", change.automation_readiness)
-    c3.metric("Risk tier", change.risk_tier)
-    c4.metric("Evidence quality", change.evidence_quality)
+    c1.metric("Materiality", change.materiality_score, help="How operationally consequential this change appears.")
+    c2.metric(
+        "Automation readiness",
+        change.automation_readiness,
+        help="How cleanly claim fields alone can express the change.",
+    )
+    c3.metric("Risk tier", change.risk_tier, help="Review risk if automation were attempted prematurely.")
+    c4.metric("Evidence quality", change.evidence_quality, help="Strength of official-source provenance.")
 
+    st.markdown("**Before / after comparison**")
+    chart_why(
+        "Why this exists: evaluators should see the exact policy wording change "
+        "before trusting any downstream rule."
+    )
     comparison = compare_texts(change.old_snapshot, change.new_snapshot)
     left, right = st.columns(2)
     with left:
@@ -149,6 +288,7 @@ def page_policy_intelligence(catalog, change_id: str) -> None:
     deltas = [d for d in comparison.entity_deltas if d.direction != "shared"]
     if deltas:
         st.markdown("**Extracted entity deltas**")
+        st.caption("Codes, dates, currencies, and modifiers pulled from the text — not inferred.")
         st.dataframe(
             pd.DataFrame([d.__dict__ for d in deltas]),
             use_container_width=True,
@@ -157,6 +297,7 @@ def page_policy_intelligence(catalog, change_id: str) -> None:
         )
 
     st.markdown("**Official source evidence**")
+    st.caption("Each card includes organization, locator, and a link to the public CMS (or related) source.")
     for source in get_sources_for_change(change, catalog):
         source_card(source)
 
@@ -166,9 +307,11 @@ def page_policy_intelligence(catalog, change_id: str) -> None:
         file_name=f"{change.change_id}_comparison.json",
         mime="application/json",
         key="pi_download_comparison",
+        help="Export the comparison artifact for offline review.",
     )
 
     with st.expander("Compare local TXT/PDF uploads (in memory)"):
+        st.caption("Optional: uploads stay in memory and are never persisted.")
         u1, u2 = st.columns(2)
         old_file = u1.file_uploader("Prior version", type=["txt", "pdf"], key="old_up")
         new_file = u2.file_uploader("New version", type=["txt", "pdf"], key="new_up")
@@ -186,10 +329,27 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
     change = get_change(change_id, catalog)
     st.subheader("Rule studio")
     st.caption("Pydantic-validated declarative rules — interpreted, never executed as code.")
+    section_help(
+        "What is this?",
+        "Step **Rule / Abstain**. When the change is claim-field clear, PolicyGuard "
+        "emits a schema-validated JSON **proposal for human review** — not executable "
+        "auto-denial code. When clinical purpose is required, it **abstains** "
+        "(refusing to automate is a feature).",
+    )
 
     if change.abstains or change.rule_template is None:
-        st.warning("System abstention: clinical documentation and expert interpretation required")
+        st.warning(
+            "System abstention: clinical documentation and expert interpretation required. "
+            "**Refusing to automate is a product feature**, not a failure."
+        )
         st.info(change.abstain_reason or "No claim-level rule can be generated from structured fields alone.")
+        section_help(
+            "Why abstention matters",
+            "Skilled therapy vs. general fitness (and similar language) depends on "
+            "clinical purpose and documentation. Structured claim fields alone are "
+            "insufficient, so PolicyGuard will not invent a claim-level rule.",
+            expanded=True,
+        )
         st.json(
             {
                 "change_id": change.change_id,
@@ -202,6 +362,10 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
     rule = change.rule_template
     st.markdown(f"**{rule.name}** · `{rule.rule_id}`")
     st.write(rule.reason)
+    st.info(
+        "This JSON is a **proposal for human review**, not executable auto-denial code. "
+        "The engine interprets declarative conditions; it never executes generated Python/SQL."
+    )
     conditions = pd.DataFrame(
         [
             {
@@ -227,11 +391,21 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
         file_name=f"{rule.rule_id}.json",
         mime="application/json",
         key="rule_download_json",
+        help="Download the validated proposal for offline governance review.",
     )
 
     with st.expander("Validated rule JSON", expanded=False):
+        st.caption(
+            "Proposal for human review — not executable auto-denial code. "
+            "`automatic_claim_action` remains false downstream."
+        )
         st.json(rule_json)
 
+    st.markdown("**Dry-run on synthetic claims**")
+    chart_why(
+        "Why this exists: shows how many synthetic rows match the proposal so "
+        "reviewers can sanity-check scope before any approval."
+    )
     dry = dry_run_rule(claims, rule)
     st.metric("Dry-run matches", dry["matched_count"])
     st.caption("Deterministic interpreter only — no generated Python/SQL is executed.")
@@ -244,9 +418,16 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
         )
 
 
-def page_claim_impact(portfolio: dict) -> None:
+def page_claim_impact(portfolio: dict, simple_mode: bool) -> None:
     st.subheader("Claim impact")
     st.caption("Synthetic operational exposure for human review prioritization.")
+    section_help(
+        "What is this?",
+        "Step **Impact**. Synthetic claims are **flagged for review** — not denied, "
+        "not labeled fraud, and not counted as savings. “Paid amount in scope” is "
+        "only the paid dollars on flagged synthetic rows.",
+    )
+
     k = portfolio["kpis"]
     kpi_row(
         [
@@ -259,42 +440,65 @@ def page_claim_impact(portfolio: dict) -> None:
     )
     st.caption(
         f"Flag rate {k['flag_rate'] * 100:.1f}%. "
-        "Paid amount in scope is not an overpayment, recovery, or savings figure."
+        "Claims are **flagged for review**. Paid amount in scope is **not** an "
+        "overpayment, recovery, fraud, or savings figure."
     )
 
-    t1, t2 = st.columns(2)
-    with t1:
-        st.markdown("**Monthly review-event trend**")
-        st.plotly_chart(
-            monthly_trend_fig(portfolio["monthly_trend"]),
-            use_container_width=True,
-            key="impact_monthly_trend",
-        )
-    with t2:
-        st.markdown("**Policy-level review volume**")
-        st.plotly_chart(
-            volume_bar_fig(portfolio["per_change"]),
-            use_container_width=True,
-            key="impact_volume_bar",
-        )
+    with optional_detail("trend & volume charts", simple_mode):
+        t1, t2 = st.columns(2)
+        with t1:
+            st.markdown("**Monthly review-event trend**")
+            chart_why(
+                "Why this chart exists: shows when synthetic review events cluster "
+                "across months of service — workload timing, not financial recovery."
+            )
+            st.plotly_chart(
+                monthly_trend_fig(portfolio["monthly_trend"]),
+                use_container_width=True,
+                key="impact_monthly_trend",
+            )
+        with t2:
+            st.markdown("**Policy-level review volume**")
+            chart_why(
+                "Why this chart exists: compares synthetic review volume across "
+                "policy changes to prioritize human attention."
+            )
+            st.plotly_chart(
+                volume_bar_fig(portfolio["per_change"]),
+                use_container_width=True,
+                key="impact_volume_bar",
+            )
 
-    p1, p2 = st.columns(2)
-    with p1:
-        st.markdown("**Provider concentration**")
-        st.plotly_chart(
-            provider_bubble_fig(portfolio["provider_concentration"]),
-            use_container_width=True,
-            key="impact_provider_bubble",
-        )
-    with p2:
-        st.markdown("**Q3014 fee-variance distribution**")
-        st.plotly_chart(
-            q3014_hist_fig(portfolio["q3014_distribution"]),
-            use_container_width=True,
-            key="impact_q3014_hist",
-        )
+    with optional_detail("provider & fee-distribution charts", simple_mode):
+        p1, p2 = st.columns(2)
+        with p1:
+            st.markdown("**Provider concentration**")
+            chart_why(
+                "Why this chart exists: highlights which synthetic providers accumulate "
+                "the most review events — triage aid only."
+            )
+            st.plotly_chart(
+                provider_bubble_fig(portfolio["provider_concentration"]),
+                use_container_width=True,
+                key="impact_provider_bubble",
+            )
+        with p2:
+            st.markdown("**Q3014 fee-variance distribution**")
+            chart_why(
+                "Why this chart exists: illustrates fee-tolerance checks for the "
+                "Q3014 scenario — configuration variance for review, not auto-reprice."
+            )
+            st.plotly_chart(
+                q3014_hist_fig(portfolio["q3014_distribution"]),
+                use_container_width=True,
+                key="impact_q3014_hist",
+            )
 
     st.markdown("**Prioritized reviewer queue**")
+    st.caption(
+        "Human worklist of synthetic claims flagged for review. "
+        "Nothing here denies or adjusts payment."
+    )
     queue = portfolio["queue"]
     st.dataframe(
         queue.head(40),
@@ -308,6 +512,7 @@ def page_claim_impact(portfolio: dict) -> None:
         file_name="reviewer_queue.csv",
         mime="text/csv",
         key="impact_download_queue",
+        help="Export the prioritized synthetic review queue.",
     )
 
 
@@ -315,6 +520,12 @@ def page_governance(catalog, change_id: str) -> None:
     change = get_change(change_id, catalog)
     st.subheader("Governance")
     st.caption("Human approval with Cotiviti/NIST-inspired controls and exportable audit.")
+    section_help(
+        "What is this?",
+        "Step **Human decision**. Approve, reject, or escalate a proposal. "
+        "Every recorded event hard-codes `automatic_claim_action=false`. "
+        "This is the mandatory human gate — the thesis ends here, not in auto-action.",
+    )
 
     st.markdown(
         """
@@ -329,9 +540,14 @@ def page_governance(catalog, change_id: str) -> None:
     )
 
     if change.abstains:
-        st.warning("Selected change abstains from claim-level automation.")
+        st.warning(
+            "Selected change abstains from claim-level automation. "
+            "You can still escalate to a policy / coding / clinical expert."
+        )
         st.write(change.abstain_reason)
 
+    st.markdown("**Record a human decision**")
+    st.caption("Required for the demo thesis: no proposal becomes operational without a reviewer.")
     with st.form("governance_form"):
         decision = st.radio(
             "Reviewer decision",
@@ -342,9 +558,18 @@ def page_governance(catalog, change_id: str) -> None:
                 "escalate": "Escalate to policy / coding / clinical expert",
             }[d],
             horizontal=True,
+            help="Human gate only — never triggers claim denial or reprice.",
         )
-        note = st.text_area("Rationale", placeholder="Document why this decision is appropriate.")
-        verified = st.checkbox("I verified the official source locator(s)", value=False)
+        note = st.text_area(
+            "Rationale",
+            placeholder="Document why this decision is appropriate.",
+            help="Capture why Approve / Reject / Escalate is appropriate for this change.",
+        )
+        verified = st.checkbox(
+            "I verified the official source locator(s)",
+            value=False,
+            help="Confirm you opened the official source evidence before deciding.",
+        )
         submitted = st.form_submit_button("Record decision")
 
     if submitted:
@@ -362,8 +587,9 @@ def page_governance(catalog, change_id: str) -> None:
             f"{record['payload']['automatic_claim_action']}"
         )
 
-    events = read_audit_events(AUDIT_PATH)
     st.markdown("**Audit trail**")
+    st.caption("Exportable JSONL of human decisions — proof that claim action stayed off.")
+    events = read_audit_events(AUDIT_PATH)
     if events:
         st.dataframe(
             pd.DataFrame(events),
@@ -380,10 +606,12 @@ def page_governance(catalog, change_id: str) -> None:
         file_name="policyguard_audit.jsonl",
         mime="application/jsonl",
         key="gov_download_audit",
+        help="Download the full audit log including automatic_claim_action=false.",
     )
 
     if EVAL_RESULTS.exists():
         with st.expander("Synthetic evaluation results"):
+            st.caption("Software/fixture checks — not production model accuracy.")
             st.json(json.loads(EVAL_RESULTS.read_text(encoding="utf-8")))
 
     st.caption(catalog.workspace.governance_note)
@@ -400,10 +628,15 @@ def main() -> None:
     inject_styles()
     catalog = load_catalog()
     claims = load_claims()
-    change_id = _sidebar(catalog, claims)
+    change_id, simple_mode = _sidebar(catalog, claims)
     portfolio = run_portfolio(claims)
 
     render_hero()
+    render_thesis_banner()
+    if st.session_state.show_guide:
+        _render_demo_guide()
+    _render_first_run_coach()
+
     tabs = st.tabs(
         [
             "01 · Executive overview",
@@ -414,13 +647,13 @@ def main() -> None:
         ]
     )
     with tabs[0]:
-        page_executive(catalog, portfolio)
+        page_executive(catalog, portfolio, simple_mode)
     with tabs[1]:
         page_policy_intelligence(catalog, change_id)
     with tabs[2]:
         page_rule_studio(catalog, claims, change_id)
     with tabs[3]:
-        page_claim_impact(portfolio)
+        page_claim_impact(portfolio, simple_mode)
     with tabs[4]:
         page_governance(catalog, change_id)
 

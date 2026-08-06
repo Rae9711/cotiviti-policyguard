@@ -68,13 +68,17 @@ No `.env` file, model key, database, Docker daemon, or external service is requi
 
 ## Best five-minute route
 
-The detailed script is in [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+Evaluator user guide (in-app coaching + careful language): [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md). Spoken demo script: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+
+**Thesis:** Policy change → source-grounded evidence → validated rule (or abstain) → synthetic claim review → human approval. No automatic claim action.
 
 1. **Executive overview:** explain the five policy patterns and opportunity matrix.
 2. **Policy intelligence:** select the therapy KX threshold and show source-grounded before/after evidence.
 3. **Rule studio:** show the validated JSON and dry-run output.
 4. **Claim impact:** show review volume, provider concentration, and reviewer queue.
 5. **Governance:** switch to the skilled-therapy example, demonstrate abstention, and record an escalation.
+
+In the app: leave **Simple demo mode** on, open **Evaluator / Demo Guide**, and follow tabs 01→05.
 
 ## Synthetic run
 
