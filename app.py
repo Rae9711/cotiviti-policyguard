@@ -65,6 +65,12 @@ def _init_state() -> None:
         st.session_state.simple_demo_mode = True
 
 
+def _dismiss_guide() -> None:
+    """Callback: runs before widgets on the next run, so show_guide is safe to set."""
+    st.session_state.guide_seen = True
+    st.session_state.show_guide = False
+
+
 def _render_demo_guide() -> None:
     """Interactive Evaluator / Demo Guide panel."""
     with st.expander(
@@ -101,10 +107,13 @@ controlled workflow ending in a human gate.
 Full write-up: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) · demo script: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)
             """
         )
-        if st.button("Got it — hide coach marks", key="guide_dismiss_btn"):
-            st.session_state.guide_seen = True
-            st.session_state.show_guide = False
-            st.rerun()
+        # Must use on_click — assigning show_guide after the sidebar toggle
+        # (same key) raises StreamlitAPIException.
+        st.button(
+            "Got it — hide coach marks",
+            key="guide_dismiss_btn",
+            on_click=_dismiss_guide,
+        )
 
 
 def _render_first_run_coach() -> None:
