@@ -1,10 +1,7 @@
 # Resume
 
-Current resume copies included for the Cotiviti assessment submission:
+Canonical assessment resume (only copy for evaluators):
 
-| File | Notes |
-| --- | --- |
-| `Haorui_Wang_Resume_2027.pdf` | Most recent dated copy found on disk (preferred) |
-| `Haorui_Wang_Resume_ML.pdf` | ML-oriented variant |
+**[Wang_Haorui_Resume_07-2026.pdf](Wang_Haorui_Resume_07-2026.pdf)**
 
-If you update your resume before submission, replace these PDFs with your latest version and keep at least one clearly named current file in this folder.
+Filename is sanitized from the original `Wang_Haorui_Resume_07:2026.pdf` (colon replaced) so it is safe in git and across operating systems.

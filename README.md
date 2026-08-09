@@ -165,7 +165,7 @@ A portfolio-level view of materiality, automation readiness, risk, review volume
 ├── docs/                          # Demo, design, source, migration, and data notes
 ├── evaluation/results.json        # Fixture checklist (not production accuracy)
 ├── evaluation/RESULTS_README.md   # What 8/8, 6/6, 2/2 and indices mean
-├── resume/Haorui_Wang_Resume.pdf
+├── resume/Wang_Haorui_Resume_07-2026.pdf
 ├── scripts/run_evaluation.py
 ├── src/
 │   ├── audit.py
@@ -180,8 +180,7 @@ A portfolio-level view of materiality, automation readiness, risk, review volume
 ├── tests/
 ├── report/
 │   ├── Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx
-│   ├── PolicyGuard_Report.docx    # same file, stable README name
-│   └── PolicyGuard_Report.md
+│   └── PolicyGuard_Report.md      # pointer to the Word file only
 ├── slides/                        # Final PowerPoint belongs here
 └── video/                         # Final MP4 belongs here
 ```
@@ -209,10 +208,10 @@ Every output is a review recommendation. Production use would require licensed c
 
 Before submission, confirm the public repository directly contains:
 
-- final two-page Microsoft Word report plus bibliography: [`report/Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx`](report/Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx) (also copied as [`report/PolicyGuard_Report.docx`](report/PolicyGuard_Report.docx); markdown mirror [`report/PolicyGuard_Report.md`](report/PolicyGuard_Report.md))
+- final two-page Microsoft Word report plus bibliography: [`report/Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx`](report/Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx)
 - final Microsoft PowerPoint
 - working POC and source code
 - MP4 recording no longer than five minutes, with the presenter on camera
-- current resume
+- current resume: [`resume/Wang_Haorui_Resume_07-2026.pdf`](resume/Wang_Haorui_Resume_07-2026.pdf)
 
 The application upgrade does not automatically replace an existing report, slide deck, or video. Use [`docs/MIGRATION_GUIDE.md`](docs/MIGRATION_GUIDE.md) to merge it safely.
