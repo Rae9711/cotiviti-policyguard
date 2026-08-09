@@ -112,7 +112,7 @@ Current local checks:
 - **2/2** abstention assertions passed
 - **9/9** automated tests passed
 
-These are software and synthetic-fixture checks—not production model accuracy. Full results are written to [`evaluation/results.json`](evaluation/results.json).
+These are software and synthetic-fixture checks—not production model accuracy. Full results are written to [`evaluation/results.json`](evaluation/results.json); what each index means is in [`evaluation/RESULTS_README.md`](evaluation/RESULTS_README.md). The **05 · Governance** tab shows labeled tables (not raw `0`/`1` JSON keys).
 
 ## Interface
 
@@ -150,7 +150,7 @@ A portfolio-level view of materiality, automation readiness, risk, review volume
 - Cotiviti/NIST-inspired control mapping
 - reviewer approval, rejection, and escalation
 - exportable JSONL audit trail
-- transparent synthetic evaluation and limitations
+- transparent synthetic evaluation checklist (labeled tables, not production accuracy)
 
 ## Repository structure
 
@@ -163,13 +163,15 @@ A portfolio-level view of materiality, automation readiness, risk, review volume
 │   ├── source_manifest.csv
 │   └── synthetic_claims.csv
 ├── docs/                          # Demo, design, source, migration, and data notes
-├── evaluation/results.json        # Transparent local benchmark
+├── evaluation/results.json        # Fixture checklist (not production accuracy)
+├── evaluation/RESULTS_README.md   # What 8/8, 6/6, 2/2 and indices mean
 ├── resume/Haorui_Wang_Resume.pdf
 ├── scripts/run_evaluation.py
 ├── src/
 │   ├── audit.py
 │   ├── catalog.py
 │   ├── demo_data.py
+│   ├── evaluation_display.py
 │   ├── impact.py
 │   ├── models.py
 │   ├── rule_engine.py

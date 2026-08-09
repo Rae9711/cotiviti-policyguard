@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-08-06T14:24:35.629305+00:00",
+  "generated_at_utc": "2026-08-09T12:24:08.277944+00:00",
   "status": "passed",
   "scope_note": "POC benchmark only: 8 handcrafted rule assertions, 6 entity-delta checks, 5 curated change records, and 1 explicit abstention scenario. These results do not estimate production accuracy.",
   "metrics": {
@@ -15,6 +15,7 @@
     {
       "change_id": "NCCI-94662-RETIREMENT",
       "case": "94662 post deletion",
+      "meaning": "After 2026-01-01, code 94662 should flag",
       "expected": true,
       "observed": true,
       "passed": true
@@ -22,6 +23,7 @@
     {
       "change_id": "NCCI-94662-RETIREMENT",
       "case": "94662 prior year",
+      "meaning": "Before effective date, should not flag",
       "expected": false,
       "observed": false,
       "passed": true
@@ -29,6 +31,7 @@
     {
       "change_id": "THERAPY-KX-THRESHOLD-2026",
       "case": "KX missing over threshold",
+      "meaning": "Over $2,480 without KX should flag",
       "expected": true,
       "observed": true,
       "passed": true
@@ -36,6 +39,7 @@
     {
       "change_id": "THERAPY-KX-THRESHOLD-2026",
       "case": "KX present over threshold",
+      "meaning": "Over threshold with KX should not flag",
       "expected": false,
       "observed": false,
       "passed": true
@@ -43,6 +47,7 @@
     {
       "change_id": "TELEHEALTH-Q3014-FEE-2026",
       "case": "Q3014 outside tolerance",
+      "meaning": "Fee drift beyond tolerance should flag",
       "expected": true,
       "observed": true,
       "passed": true
@@ -50,6 +55,7 @@
     {
       "change_id": "TELEHEALTH-Q3014-FEE-2026",
       "case": "Q3014 within tolerance",
+      "meaning": "Small variance should not flag",
       "expected": false,
       "observed": false,
       "passed": true
@@ -57,6 +63,7 @@
     {
       "change_id": "THERAPY-RTM-CODES-2026",
       "case": "RTM unmapped",
+      "meaning": "New RTM code unmapped should flag",
       "expected": true,
       "observed": true,
       "passed": true
@@ -64,6 +71,7 @@
     {
       "change_id": "THERAPY-RTM-CODES-2026",
       "case": "RTM mapped",
+      "meaning": "Mapped RTM should not flag",
       "expected": false,
       "observed": false,
       "passed": true
@@ -75,6 +83,7 @@
       "category": "dates",
       "entity": "January 1, 2026",
       "direction": "added",
+      "meaning": "Effective date appears in the new policy snapshot",
       "passed": true
     },
     {
@@ -82,6 +91,7 @@
       "category": "currency",
       "entity": "$2,480",
       "direction": "added",
+      "meaning": "New KX dollar threshold added",
       "passed": true
     },
     {
@@ -89,6 +99,7 @@
       "category": "currency",
       "entity": "$2,410",
       "direction": "removed",
+      "meaning": "Prior KX dollar threshold removed",
       "passed": true
     },
     {
@@ -96,6 +107,7 @@
       "category": "currency",
       "entity": "$31.85",
       "direction": "added",
+      "meaning": "New Q3014 fee appears",
       "passed": true
     },
     {
@@ -103,6 +115,7 @@
       "category": "currency",
       "entity": "$31.01",
       "direction": "removed",
+      "meaning": "Prior Q3014 fee removed",
       "passed": true
     },
     {
@@ -110,16 +123,19 @@
       "category": "codes",
       "entity": "98984",
       "direction": "added",
+      "meaning": "New RTM code 98984 appears",
       "passed": true
     }
   ],
   "abstention_checks": [
     {
       "check": "no rule template",
+      "meaning": "Clinical/fitness change has no claim-level rule template",
       "passed": true
     },
     {
       "check": "reason documented",
+      "meaning": "Abstention reason is documented for reviewers",
       "passed": true
     }
   ]

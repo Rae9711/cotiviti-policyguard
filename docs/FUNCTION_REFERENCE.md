@@ -23,5 +23,6 @@
 ## App entry points
 
 - ``app.main`` — Streamlit orchestration for the five workspaces
-- ``scripts/run_evaluation.py`` — writes ``evaluation/results.json``
+- ``scripts/run_evaluation.py`` — writes ``evaluation/results.json`` (fixture checklist; see ``evaluation/RESULTS_README.md``)
+- ``src.evaluation_display`` — labeled tables for the Governance evaluation panel
 - ``make verify`` — data + evaluation + pytest

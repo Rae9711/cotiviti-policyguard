@@ -2,7 +2,17 @@
 
 Produces ``evaluation/results.json`` with handcrafted rule assertions,
 entity-delta checks, source provenance coverage, and abstention checks.
-These are software/fixture checks — not production healthcare accuracy.
+
+This is a **software/fixture checklist** that the deterministic demo still
+behaves as designed — not model accuracy on real claims. See
+``evaluation/RESULTS_README.md`` for what each 0–7 / 0–5 index means.
+
+Metrics written to the file:
+
+- ``rule_assertions`` 8/8 — two synthetic claims per executable rule
+- ``entity_checks`` 6/6 — expected dates/dollars/codes in snapshots
+- ``source_coverage`` 1.0 — all five curated changes have provenance
+- ``abstention_checks`` 2/2 — clinical/fitness change has no template + reason
 """
 
 from __future__ import annotations
@@ -136,18 +146,68 @@ def _rule_assertions() -> list[dict]:
         ]
     )
 
+    # Index in results.json == row order here (0–7). expected=True means the
+    # claim should match the rule (flag for review); False means no flag.
     cases = [
-        ("NCCI-94662-RETIREMENT", "94662 post deletion", "T1", True),
-        ("NCCI-94662-RETIREMENT", "94662 prior year", "T2", False),
-        ("THERAPY-KX-THRESHOLD-2026", "KX missing over threshold", "T3", True),
-        ("THERAPY-KX-THRESHOLD-2026", "KX present over threshold", "T4", False),
-        ("TELEHEALTH-Q3014-FEE-2026", "Q3014 outside tolerance", "T5", True),
-        ("TELEHEALTH-Q3014-FEE-2026", "Q3014 within tolerance", "T6", False),
-        ("THERAPY-RTM-CODES-2026", "RTM unmapped", "T7", True),
-        ("THERAPY-RTM-CODES-2026", "RTM mapped", "T8", False),
+        (
+            "NCCI-94662-RETIREMENT",
+            "94662 post deletion",
+            "T1",
+            True,
+            "After 2026-01-01, code 94662 should flag",
+        ),
+        (
+            "NCCI-94662-RETIREMENT",
+            "94662 prior year",
+            "T2",
+            False,
+            "Before effective date, should not flag",
+        ),
+        (
+            "THERAPY-KX-THRESHOLD-2026",
+            "KX missing over threshold",
+            "T3",
+            True,
+            "Over $2,480 without KX should flag",
+        ),
+        (
+            "THERAPY-KX-THRESHOLD-2026",
+            "KX present over threshold",
+            "T4",
+            False,
+            "Over threshold with KX should not flag",
+        ),
+        (
+            "TELEHEALTH-Q3014-FEE-2026",
+            "Q3014 outside tolerance",
+            "T5",
+            True,
+            "Fee drift beyond tolerance should flag",
+        ),
+        (
+            "TELEHEALTH-Q3014-FEE-2026",
+            "Q3014 within tolerance",
+            "T6",
+            False,
+            "Small variance should not flag",
+        ),
+        (
+            "THERAPY-RTM-CODES-2026",
+            "RTM unmapped",
+            "T7",
+            True,
+            "New RTM code unmapped should flag",
+        ),
+        (
+            "THERAPY-RTM-CODES-2026",
+            "RTM mapped",
+            "T8",
+            False,
+            "Mapped RTM should not flag",
+        ),
     ]
     results = []
-    for change_id, case, claim_id, expected in cases:
+    for change_id, case, claim_id, expected, meaning in cases:
         rule = get_change(change_id).rule_template
         assert isinstance(rule, PolicyRule)
         out = apply_rule(claims[claims["claim_id"] == claim_id], rule)
@@ -156,6 +216,7 @@ def _rule_assertions() -> list[dict]:
             {
                 "change_id": change_id,
                 "case": case,
+                "meaning": meaning,
                 "expected": expected,
                 "observed": observed,
                 "passed": observed == expected,
@@ -166,16 +227,53 @@ def _rule_assertions() -> list[dict]:
 
 def _entity_checks() -> list[dict]:
     catalog = load_catalog()
+    # Indices 0–5: did comparison/entity extraction see the expected deltas?
     expectations = [
-        ("NCCI-94662-RETIREMENT", "dates", "January 1, 2026", "added"),
-        ("THERAPY-KX-THRESHOLD-2026", "currency", "$2,480", "added"),
-        ("THERAPY-KX-THRESHOLD-2026", "currency", "$2,410", "removed"),
-        ("TELEHEALTH-Q3014-FEE-2026", "currency", "$31.85", "added"),
-        ("TELEHEALTH-Q3014-FEE-2026", "currency", "$31.01", "removed"),
-        ("THERAPY-RTM-CODES-2026", "codes", "98984", "added"),
+        (
+            "NCCI-94662-RETIREMENT",
+            "dates",
+            "January 1, 2026",
+            "added",
+            "Effective date appears in the new policy snapshot",
+        ),
+        (
+            "THERAPY-KX-THRESHOLD-2026",
+            "currency",
+            "$2,480",
+            "added",
+            "New KX dollar threshold added",
+        ),
+        (
+            "THERAPY-KX-THRESHOLD-2026",
+            "currency",
+            "$2,410",
+            "removed",
+            "Prior KX dollar threshold removed",
+        ),
+        (
+            "TELEHEALTH-Q3014-FEE-2026",
+            "currency",
+            "$31.85",
+            "added",
+            "New Q3014 fee appears",
+        ),
+        (
+            "TELEHEALTH-Q3014-FEE-2026",
+            "currency",
+            "$31.01",
+            "removed",
+            "Prior Q3014 fee removed",
+        ),
+        (
+            "THERAPY-RTM-CODES-2026",
+            "codes",
+            "98984",
+            "added",
+            "New RTM code 98984 appears",
+        ),
     ]
     results = []
-    for change_id, category, entity, direction in expectations:
+    for change_id, category, entity, direction, meaning in expectations:
         change = get_change(change_id, catalog)
         cmp = compare_texts(change.old_snapshot, change.new_snapshot)
         found = any(
@@ -202,6 +300,7 @@ def _entity_checks() -> list[dict]:
                 "category": category,
                 "entity": entity,
                 "direction": direction,
+                "meaning": meaning,
                 "passed": found,
             }
         )
@@ -209,11 +308,17 @@ def _entity_checks() -> list[dict]:
 
 
 def _abstention_checks() -> list[dict]:
+    # Indices 0–1: clinical/fitness change must abstain, not invent a rule.
     change = get_change("THERAPY-SKILLED-VS-FITNESS")
     return [
-        {"check": "no rule template", "passed": change.rule_template is None},
+        {
+            "check": "no rule template",
+            "meaning": "Clinical/fitness change has no claim-level rule template",
+            "passed": change.rule_template is None,
+        },
         {
             "check": "reason documented",
+            "meaning": "Abstention reason is documented for reviewers",
             "passed": bool(change.abstain_reason and len(change.abstain_reason) > 20),
         },
     ]

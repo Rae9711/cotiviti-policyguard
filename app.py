@@ -27,6 +27,13 @@ import streamlit as st
 from src.audit import audit_events_jsonl, read_audit_events, record_review_decision
 from src.catalog import get_change, get_sources_for_change, load_catalog
 from src.demo_data import load_claims
+from src.evaluation_display import (
+    WHAT_THIS_IS,
+    abstention_checks_table,
+    entity_checks_table,
+    metric_cards,
+    rule_checks_table,
+)
 from src.impact import dry_run_rule, review_burden_metrics, run_portfolio
 from src.semantic_diff import compare_texts, extract_text_from_upload
 from src.ui import (
@@ -95,7 +102,7 @@ and a human Approve / Reject / Escalate decision — **with no automatic claim a
 - **Policy intelligence:** highlighted deltas tied to official CMS locators
 - **Rule studio:** declarative JSON for human review — not executable auto-denial code
 - **Claim impact:** synthetic claims *flagged for review*; review-burden % vs all-claim screening; “paid amount in scope” ≠ savings
-- **Governance:** Approve / Reject / Escalate with `automatic_claim_action=false`
+- **Governance:** Approve / Reject / Escalate with `automatic_claim_action=false`; demo checklist (not accuracy)
 
 ### Recommended scenarios
 - Start with **Therapy KX threshold increased** (or **94662 retirement**)
@@ -733,11 +740,69 @@ def page_governance(catalog, change_id: str) -> None:
     )
 
     if EVAL_RESULTS.exists():
-        with st.expander("Synthetic evaluation results"):
-            st.caption("Software/fixture checks — not production model accuracy.")
-            st.json(json.loads(EVAL_RESULTS.read_text(encoding="utf-8")))
+        _render_evaluation_results()
 
     st.caption(catalog.workspace.governance_note)
+
+
+def _render_evaluation_results() -> None:
+    """Governance panel for evaluation/results.json — tables, not 0/1 JSON keys."""
+    payload = json.loads(EVAL_RESULTS.read_text(encoding="utf-8"))
+    st.markdown("**Demo software checklist**")
+    st.caption(
+        "Not production model accuracy. Confirms the deterministic demo still "
+        "behaves as designed on handcrafted fixtures."
+    )
+    section_help("What this is", WHAT_THIS_IS)
+    kpi_row(metric_cards(payload))
+    st.caption(
+        f"Status: `{payload.get('status', 'unknown')}` · generated "
+        f"{payload.get('generated_at_utc', '—')}. "
+        f"{payload.get('scope_note', '')}"
+    )
+
+    st.markdown("**Rule assertions (synthetic claim cases)**")
+    st.caption(
+        "`Flag for review` means the claim matched the rule; `No flag` means it did not. "
+        "Pass = expected outcome equals observed. Indices 0–7 are case numbers, not scores."
+    )
+    st.dataframe(
+        rule_checks_table(payload),
+        use_container_width=True,
+        hide_index=True,
+        key="gov_eval_rule_checks",
+    )
+
+    st.markdown("**Entity checks (snapshot extraction)**")
+    st.caption(
+        "Did comparison/entity extraction see the expected dates, dollars, and codes "
+        "in the curated policy snapshots?"
+    )
+    st.dataframe(
+        entity_checks_table(payload),
+        use_container_width=True,
+        hide_index=True,
+        key="gov_eval_entity_checks",
+    )
+
+    st.markdown("**Abstention checks (clinical / fitness change)**")
+    st.caption(
+        "THERAPY-SKILLED-VS-FITNESS must not emit a claim-level rule template, "
+        "and the abstention reason must be documented."
+    )
+    st.dataframe(
+        abstention_checks_table(payload),
+        use_container_width=True,
+        hide_index=True,
+        key="gov_eval_abstention_checks",
+    )
+
+    with st.expander("Raw JSON", expanded=False):
+        st.caption(
+            "Same file as `evaluation/results.json`. List keys 0, 1, 2… are array "
+            "indices, not scores. See `evaluation/RESULTS_README.md`."
+        )
+        st.json(payload)
 
 
 def main() -> None:
