@@ -1,10 +1,14 @@
 # Screenshots
 
-Captured from the local Streamlit POC (`streamlit run app.py`).
+These images were captured from PolicyGuard v1 and are preserved during the
+v2 upgrade so report/slide/video work is not silently overwritten.
 
-| File | Contents |
-| --- | --- |
-| `01_overview_disclaimer_diff.png` | Disclaimer, policy pair, line-level diff |
-| `02_grounded_changes.png` | Source-grounded change cards / evidence |
-| `03_approved_claim_impact.png` | After Approve: claim impact (careful language) |
-| `04_audit_trail.png` | Audit JSONL / lower page |
+After running `streamlit run app.py`, replace these captures with v2 views:
+
+1. Executive Overview (opportunity matrix + KPIs)
+2. Policy Intelligence — Therapy KX threshold
+3. Rule Studio — validated conditions / JSON
+4. Claim Impact — trend, provider concentration, queue
+5. Governance — abstention + audit decision
+
+The design-system preview used in the README is `assets/ui_preview.png`.

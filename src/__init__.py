@@ -1,5 +1,3 @@
-"""PolicyGuard package marker.
+"""PolicyGuard package marker."""
 
-Submodules implement the POC pipeline: policy diff → change analysis →
-declarative rule schema → deterministic rule engine → audit logging.
-"""
+__version__ = "2.0.0"
