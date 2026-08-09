@@ -17,6 +17,7 @@
 
 - ``src.demo_data.generate_claims`` / ``write_claims`` — 604-row synthetic set
 - ``src.impact.run_portfolio`` — KPIs, charts inputs, prioritized queue
+- ``src.impact.review_burden_metrics`` — synthetic HITL vs all-claim screening ratios
 - ``src.audit.record_review_decision`` — JSONL with ``automatic_claim_action=false``
 
 ## App entry points

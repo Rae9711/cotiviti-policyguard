@@ -27,7 +27,7 @@ import streamlit as st
 from src.audit import audit_events_jsonl, read_audit_events, record_review_decision
 from src.catalog import get_change, get_sources_for_change, load_catalog
 from src.demo_data import load_claims
-from src.impact import dry_run_rule, run_portfolio
+from src.impact import dry_run_rule, review_burden_metrics, run_portfolio
 from src.semantic_diff import compare_texts, extract_text_from_upload
 from src.ui import (
     chart_why,
@@ -87,14 +87,14 @@ and a human Approve / Reject / Escalate decision — **with no automatic claim a
 1. **01 · Executive overview** — portfolio of five policy patterns
 2. **02 · Policy intelligence** — before/after + official source cards
 3. **03 · Rule studio** — validated JSON proposal or abstention
-4. **04 · Claim impact** — flagged-for-review volume (not fraud/savings)
+4. **04 · Claim impact** — flagged-for-review volume + synthetic review-burden comparison (not fraud/savings)
 5. **05 · Governance** — record a human decision + download audit
 
 ### What to look for on each tab
 - **Executive:** five curated changes; one required abstention; opportunity matrix is supporting context
 - **Policy intelligence:** highlighted deltas tied to official CMS locators
 - **Rule studio:** declarative JSON for human review — not executable auto-denial code
-- **Claim impact:** synthetic claims *flagged for review*; “paid amount in scope” ≠ savings
+- **Claim impact:** synthetic claims *flagged for review*; review-burden % vs all-claim screening; “paid amount in scope” ≠ savings
 - **Governance:** Approve / Reject / Escalate with `automatic_claim_action=false`
 
 ### Recommended scenarios
@@ -431,14 +431,20 @@ def page_rule_studio(catalog, claims: pd.DataFrame, change_id: str) -> None:
         )
 
 
-def page_claim_impact(portfolio: dict, simple_mode: bool) -> None:
+def _pct_display(rate: float, digits: int = 1) -> str:
+    return f"{rate * 100:.{digits}f}%"
+
+
+def page_claim_impact(portfolio: dict, simple_mode: bool, catalog, change_id: str) -> None:
     st.subheader("Claim impact")
     st.caption("Synthetic operational exposure for human review prioritization.")
     section_help(
         "What is this?",
         "Step **Impact**. Synthetic claims are **flagged for review** — not denied, "
         "not labeled fraud, and not counted as savings. “Paid amount in scope” is "
-        "only the paid dollars on flagged synthetic rows.",
+        "only the paid dollars on flagged synthetic rows. Review-burden percentages "
+        "compare this HITL workflow to naive claim-by-claim screening on the "
+        "synthetic pack — not production labor savings.",
     )
 
     k = portfolio["kpis"]
@@ -455,6 +461,110 @@ def page_claim_impact(portfolio: dict, simple_mode: bool) -> None:
         f"Flag rate {k['flag_rate'] * 100:.1f}%. "
         "Claims are **flagged for review**. Paid amount in scope is **not** an "
         "overpayment, recovery, fraud, or savings figure."
+    )
+
+    burden = review_burden_metrics(
+        portfolio, catalog=catalog, selected_change_id=change_id
+    )
+    st.markdown("**Synthetic review-burden comparison**")
+    st.caption(
+        "Baseline A: a reviewer would theoretically inspect every synthetic claim "
+        "in scope to apply a new policy change. PolicyGuard: humans make a small "
+        "number of rule-level decisions (approve / reject / escalate / abstain), "
+        "then only flagged claims enter a review queue."
+    )
+    flagged_per = burden["flagged_per_executable_decision"]
+    gates_per_100 = burden["gates_per_100_flagged"]
+    flagged_per_label = f"{flagged_per:.1f}" if flagged_per is not None else "—"
+    gates_caption = (
+        f"{burden['unique_claims_flagged']} unique flagged / "
+        f"{burden['executable_proposals']} executable proposals → "
+        f"1 human rule decision per {flagged_per:.1f} queued claims"
+        + (
+            f" · {gates_per_100:.1f} rule-level gates per 100 flagged claims"
+            if gates_per_100 is not None
+            else ""
+        )
+        if flagged_per is not None
+        else "No executable proposals in this catalog."
+    )
+    selected = burden["selected"]
+    if selected and selected["abstains"]:
+        selected_value = "1 → 0"
+        selected_caption = (
+            f"{selected['short_label']}: this curated change abstains — "
+            "0 claim-level rule, so no noisy review queue is generated."
+        )
+    elif selected:
+        selected_value = f"1 → {selected['flagged_claims']}"
+        selected_caption = (
+            f"{selected['short_label']}: one human rule-level gate covers "
+            f"{selected['flagged_claims']} flagged-for-review matches on this "
+            "synthetic pack."
+        )
+    else:
+        selected_value = "—"
+        selected_caption = "Select a focus change to see one-human-gate scope."
+
+    kpi_row(
+        [
+            (
+                "Review concentration",
+                _pct_display(burden["review_concentration"]),
+                (
+                    f"{burden['unique_claims_flagged']} of {burden['claims_evaluated']} "
+                    "synthetic claims flagged for review vs reviewing 100% of claims "
+                    "after a policy change."
+                ),
+            ),
+            (
+                "Not flagged under these rules",
+                _pct_display(burden["not_flagged_rate"]),
+                (
+                    "Not auto-paid or auto-denied — simply not flagged by the current "
+                    "approved-for-testing proposals."
+                ),
+            ),
+            (
+                "Decision compression",
+                _pct_display(burden["decision_compression"]),
+                (
+                    f"{burden['policy_decisions']} rule-level policy decisions "
+                    f"({burden['executable_proposals']} executable + "
+                    f"{burden['abstentions']} abstention) vs "
+                    f"{burden['claims_evaluated']} claim-level interpretations."
+                ),
+            ),
+        ]
+    )
+    kpi_row(
+        [
+            (
+                "Flagged claims per rule-level gate",
+                flagged_per_label,
+                gates_caption,
+            ),
+            (
+                "Selected change coverage",
+                selected_value,
+                selected_caption,
+            ),
+            (
+                "Abstention share",
+                _pct_display(burden["abstention_share"], digits=0),
+                (
+                    f"{burden['abstentions']} of {burden['curated_changes']} curated "
+                    "changes abstain — prevents generating a noisy review queue when "
+                    "evidence is insufficient."
+                ),
+            ),
+        ]
+    )
+
+    st.info(
+        "These percentages compare this HITL workflow to naive all-claim manual "
+        "screening on the **synthetic** pack. They are not production labor savings "
+        "or payment-accuracy lifts."
     )
 
     with optional_detail("trend & volume charts", simple_mode):
@@ -665,7 +775,7 @@ def main() -> None:
     with tabs[2]:
         page_rule_studio(catalog, claims, change_id)
     with tabs[3]:
-        page_claim_impact(portfolio, simple_mode)
+        page_claim_impact(portfolio, simple_mode, catalog, change_id)
     with tabs[4]:
         page_governance(catalog, change_id)
 

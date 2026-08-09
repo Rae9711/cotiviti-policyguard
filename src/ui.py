@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import html
 from contextlib import nullcontext
-from typing import Any
+from typing import Any, Sequence
 
 import pandas as pd
 import plotly.express as px
@@ -148,6 +148,12 @@ def inject_styles() -> None:
             font-weight: 700;
             margin-top: 0.15rem;
         }}
+        .pg-kpi .caption {{
+            color: {COLORS["muted"]};
+            font-size: 0.72rem;
+            line-height: 1.35;
+            margin-top: 0.4rem;
+        }}
         .pg-card {{
             background: white;
             border: 1px solid #e6e8f2;
@@ -261,16 +267,25 @@ def optional_detail(label: str, simple_mode: bool):
     return nullcontext()
 
 
-def kpi_row(items: list[tuple[str, str]]) -> None:
-    """Render a horizontal row of KPI cards."""
+def kpi_row(items: Sequence[tuple[str, str] | tuple[str, str, str]]) -> None:
+    """Render a horizontal row of KPI cards.
+
+    Each item is ``(label, value)`` or ``(label, value, caption)``.
+    """
     cols = st.columns(len(items))
-    for col, (label, value) in zip(cols, items):
+    for col, item in zip(cols, items):
+        label, value = item[0], item[1]
+        caption = item[2] if len(item) > 2 else ""
+        caption_html = (
+            f'<div class="caption">{html.escape(str(caption))}</div>' if caption else ""
+        )
         with col:
             st.markdown(
                 f"""
                 <div class="pg-kpi">
                   <div class="label">{html.escape(label)}</div>
                   <div class="value">{html.escape(str(value))}</div>
+                  {caption_html}
                 </div>
                 """,
                 unsafe_allow_html=True,

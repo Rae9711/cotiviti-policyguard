@@ -15,7 +15,7 @@ from typing import Any
 import pandas as pd
 
 from src.catalog import executable_rules, load_catalog
-from src.models import PolicyChange, PolicyRule
+from src.models import PolicyCatalog, PolicyChange, PolicyRule
 from src.rule_engine import apply_rule
 
 
@@ -86,6 +86,71 @@ def run_portfolio(claims: pd.DataFrame) -> dict[str, Any]:
         "q3014_distribution": _q3014_distribution(claims),
         "queue": build_review_queue(events),
         "opportunity_matrix": _opportunity_matrix(),
+    }
+
+
+def review_burden_metrics(
+    portfolio: dict[str, Any],
+    *,
+    catalog: PolicyCatalog | None = None,
+    selected_change_id: str | None = None,
+) -> dict[str, Any]:
+    """Compare HITL rule-level review to naive all-claim screening.
+
+    All rates are synthetic-pack ratios (flagged / evaluated, policy
+    decisions / claims). They are not production labor savings, FTE
+    reduction, fraud, recovery, or payment-accuracy lifts.
+    """
+    cat = catalog or load_catalog()
+    kpis = portfolio["kpis"]
+    claims_evaluated = int(kpis["claims_evaluated"])
+    unique_flagged = int(kpis["unique_claims_flagged"])
+    executable = sum(1 for change in cat.changes if not change.abstains)
+    abstentions = sum(1 for change in cat.changes if change.abstains)
+    curated = len(cat.changes)
+    policy_decisions = executable + abstentions
+
+    concentration = (unique_flagged / claims_evaluated) if claims_evaluated else 0.0
+    not_flagged_rate = (1.0 - concentration) if claims_evaluated else 0.0
+    compression = (
+        1.0 - (policy_decisions / claims_evaluated) if claims_evaluated else 0.0
+    )
+    flagged_per_gate = (unique_flagged / executable) if executable else None
+    gates_per_100_flagged = (
+        (executable / unique_flagged) * 100.0 if unique_flagged else None
+    )
+    abstention_share = (abstentions / curated) if curated else 0.0
+
+    selected: dict[str, Any] | None = None
+    if selected_change_id:
+        by_id = {row["change_id"]: row for row in portfolio.get("per_change", [])}
+        change = next((c for c in cat.changes if c.change_id == selected_change_id), None)
+        if change is not None:
+            row = by_id.get(selected_change_id)
+            selected = {
+                "change_id": selected_change_id,
+                "title": change.title,
+                "short_label": _short_label(change),
+                "abstains": change.abstains,
+                "flagged_claims": (
+                    0 if change.abstains else int(row["flagged_claims"]) if row else 0
+                ),
+            }
+
+    return {
+        "claims_evaluated": claims_evaluated,
+        "unique_claims_flagged": unique_flagged,
+        "executable_proposals": executable,
+        "abstentions": abstentions,
+        "curated_changes": curated,
+        "policy_decisions": policy_decisions,
+        "review_concentration": concentration,
+        "not_flagged_rate": not_flagged_rate,
+        "decision_compression": compression,
+        "flagged_per_executable_decision": flagged_per_gate,
+        "gates_per_100_flagged": gates_per_100_flagged,
+        "abstention_share": abstention_share,
+        "selected": selected,
     }
 
 

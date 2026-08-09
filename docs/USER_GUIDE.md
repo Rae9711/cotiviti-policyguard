@@ -24,7 +24,7 @@ It never denies, reprices, adjudicates, or makes a clinical decision. Audit even
 | 1 | **01 · Executive overview** | Five policy patterns; one required abstention; charts are supporting context |
 | 2 | **02 · Policy intelligence** | Before/after highlights + official source locators |
 | 3 | **03 · Rule studio** | Validated JSON proposal **or** abstention — not auto-denial code |
-| 4 | **04 · Claim impact** | Claims *flagged for review*; “paid amount in scope” ≠ savings/fraud |
+| 4 | **04 · Claim impact** | Claims *flagged for review*; review-burden % vs naive all-claim screening; “paid amount in scope” ≠ savings/fraud |
 | 5 | **05 · Governance** | Record Approve / Reject / Escalate; download audit JSONL |
 
 ## Recommended scenarios
