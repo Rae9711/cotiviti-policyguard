@@ -178,7 +178,10 @@ A portfolio-level view of materiality, automation readiness, risk, review volume
 │   ├── semantic_diff.py
 │   └── ui.py
 ├── tests/
-├── report/                        # Final Word report belongs here
+├── report/
+│   ├── Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx
+│   ├── PolicyGuard_Report.docx    # same file, stable README name
+│   └── PolicyGuard_Report.md
 ├── slides/                        # Final PowerPoint belongs here
 └── video/                         # Final MP4 belongs here
 ```
@@ -206,7 +209,7 @@ Every output is a review recommendation. Production use would require licensed c
 
 Before submission, confirm the public repository directly contains:
 
-- final two-page Microsoft Word report plus bibliography page
+- final two-page Microsoft Word report plus bibliography: [`report/Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx`](report/Haorui_Wang_Cotiviti_PolicyGuard_Revised_Final.docx) (also copied as [`report/PolicyGuard_Report.docx`](report/PolicyGuard_Report.docx); markdown mirror [`report/PolicyGuard_Report.md`](report/PolicyGuard_Report.md))
 - final Microsoft PowerPoint
 - working POC and source code
 - MP4 recording no longer than five minutes, with the presenter on camera
