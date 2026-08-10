@@ -6,7 +6,7 @@
 **Deck:** [`slides/Haorui_Wang_PolicyGuard_Cotiviti_Assessment.pptx`](../slides/Haorui_Wang_PolicyGuard_Cotiviti_Assessment.pptx)  
 **Target spoken length:** 4:30–4:50 (hard cap 5:00 MP4)  
 **Format:** candidate on camera + slide walkthrough. Optional live Streamlit overlay on slides 5–6 (same spoken lines).  
-**Upload:** MP4 in this public repo (`video/PolicyGuard_Demo.mp4`). Do not use YouTube or Drive.
+**Upload:** MP4 in this public repo (`video/Haorui_Wang_PolicyGuard_Demo.mp4`). Do not use YouTube or Drive.
 
 This is an **8-slide walkthrough**. The deck is slide-only; slide 5 already contains a Governance screenshot. Cotiviti also asks for a working-POC screenshare — treat the live app as a **visual swap**, not extra spoken content.
 
@@ -25,7 +25,7 @@ This is an **8-slide walkthrough**. The deck is slide-only; slide 5 already cont
    Leave **Simple demo mode** on. Park on **05 · Governance**.
 3. Camera: face + upper torso, picture-in-picture. Look at the **camera** for greetings, thesis, disclaimer, and close. Look at the **slide/app** when pointing at numbers or the screenshot.
 4. Speak slightly slower than conversation (~145 words/min). Leave 2 seconds of silence at the end before stopping.
-5. Export MP4 ≤ 5:00 into `video/PolicyGuard_Demo.mp4`.
+5. Export MP4 ≤ 5:00 into `video/Haorui_Wang_PolicyGuard_Demo.mp4`.
 
 **Phrases to use:** flagged for review, paid amount in scope, human review queue, illustrative assumption, required abstention, `automatic_claim_action = false`.  
 **Phrases to avoid:** fraud, denial, overpayment, recovery, savings, abusive provider — except to say the demo is **not** those things. Voice the time math as an **assumption**, exactly as the slide labels it.  
@@ -228,4 +228,4 @@ The working proof of concept is in the public repository: github.com/Rae9711/cot
 
 If rehearsal exceeds 4:50, drop slide 3’s RTM code list (keep “mapping check”) then slide 7’s measures list (keep Success). Do not cut the disclaimer, paid-in-scope line, time-assumption caveat, or repo close.
 
-After recording, commit `video/PolicyGuard_Demo.mp4` and keep this script in the repo.
+After recording, commit `video/Haorui_Wang_PolicyGuard_Demo.mp4` and keep this script in the repo.
