@@ -4,6 +4,8 @@
 
 PolicyGuard is a human-in-the-loop proof of concept. It **flags synthetic claims for review**. It does **not** make autonomous clinical, payment, or claim-denial decisions.
 
+**Live demo:** [https://cotiviti-policyguard-haorui-wang.streamlit.app/](https://cotiviti-policyguard-haorui-wang.streamlit.app/) — hosted from the same `main` branch as this repository. GitHub remains the official submission (report, slides, video, and resume stay in-repo).
+
 ![PolicyGuard interface preview](assets/ui_preview.png)
 
 ## Assessment
@@ -54,7 +56,9 @@ Catalog and locators: [`data/policies/policy_catalog.json`](data/policies/policy
 
 ## How to start
 
-Python 3.11+ recommended. No `.env`, model key, database, or Docker.
+**Evaluators can open the live app** at [https://cotiviti-policyguard-haorui-wang.streamlit.app/](https://cotiviti-policyguard-haorui-wang.streamlit.app/) **or run locally**. The hosted app is the same `main` code; this GitHub repo is still the official submission.
+
+Local run is the backup if the free hosted app is asleep. Python 3.11+ recommended. No `.env`, model key, database, or Docker.
 
 ```bash
 git clone https://github.com/Rae9711/cotiviti-policyguard.git
@@ -67,7 +71,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Opens at [http://localhost:8501](http://localhost:8501).
+Local app opens at [http://localhost:8501](http://localhost:8501).
 
 Optional checks: `pytest -q` or `make verify`.
 

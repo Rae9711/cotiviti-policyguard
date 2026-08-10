@@ -1,5 +1,7 @@
 # Five-minute demonstration script
 
+**Live demo:** [https://cotiviti-policyguard-haorui-wang.streamlit.app/](https://cotiviti-policyguard-haorui-wang.streamlit.app/) (same `main` code). Local backup: `streamlit run app.py` → [http://localhost:8501](http://localhost:8501). Report, slides, video, and resume stay in this GitHub repo.
+
 Evaluator-facing walkthrough (tabs, what to look for, careful language): [`USER_GUIDE.md`](USER_GUIDE.md).
 
 The assessment video must remain under five minutes. This route shows breadth without clicking through every chart.

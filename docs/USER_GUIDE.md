@@ -1,5 +1,7 @@
 # PolicyGuard user guide (evaluators)
 
+**Live demo:** [https://cotiviti-policyguard-haorui-wang.streamlit.app/](https://cotiviti-policyguard-haorui-wang.streamlit.app/) (same `main` code as this repo). Or run locally with `streamlit run app.py` → [http://localhost:8501](http://localhost:8501) if the hosted free tier is asleep. GitHub remains the official submission for report, slides, video, and resume.
+
 **Main thesis (do not miss this):**
 
 > Policy change → source-grounded evidence → validated rule (or abstain) → synthetic claim review → human approval. **No automatic claim action.**
