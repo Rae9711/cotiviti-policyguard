@@ -90,7 +90,7 @@ In-app coaching: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md).
 | Two-page Word report + bibliography | [`report/Haorui_Wang_Cotiviti_PolicyGuard_Report.docx`](report/Haorui_Wang_Cotiviti_PolicyGuard_Report.docx) |
 | PowerPoint | [`slides/Haorui_Wang_PolicyGuard_Cotiviti_Assessment.pptx`](slides/Haorui_Wang_PolicyGuard_Cotiviti_Assessment.pptx) |
 | Resume | [`resume/Wang_Haorui_Resume_07-2026.pdf`](resume/Wang_Haorui_Resume_07-2026.pdf) |
-| Video (MP4 ≤ 5 min, candidate on camera, in this repo — not YouTube/Drive) | [`video/Haorui_Wang_PolicyGuard_Demo.mp4`](video/Haorui_Wang_PolicyGuard_Demo.mp4) · script [`video/SCRIPT.md`](video/SCRIPT.md) |
+| Video (MP4 ≤ 5 min, candidate on camera, in this repo — not YouTube/Drive) | [`video/Haorui_Wang_PolicyGuard_Demo.mp4`](video/Haorui_Wang_PolicyGuard_Demo.mp4) |
 | Working POC | [`app.py`](app.py) · [`src/`](src/) |
 | Policy catalog + synthetic claims | [`data/policies/policy_catalog.json`](data/policies/policy_catalog.json) · [`data/synthetic_claims.csv`](data/synthetic_claims.csv) |
 | Synthetic evaluation checklist (not production accuracy) | [`evaluation/results.json`](evaluation/results.json) · [`evaluation/RESULTS_README.md`](evaluation/RESULTS_README.md) |
